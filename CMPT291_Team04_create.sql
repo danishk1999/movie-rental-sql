@@ -26,7 +26,7 @@ CREATE TABLE Employee (
     FirstName  VARCHAR(40)  NOT NULL,
     StartDate  DATE         NOT NULL DEFAULT (GETDATE()),
     PRIMARY KEY (EmployeeID),
-    UNIQUE (SSN)
+    UNIQUE (SSN, StartDate)
 );
 
 CREATE TABLE Customer (
@@ -41,8 +41,8 @@ CREATE TABLE Customer (
     Email               VARCHAR(120),
     AccountNumber       VARCHAR(40)  NOT NULL,
     AccountCreationDate DATE         NOT NULL DEFAULT (CONVERT(date, GETDATE())),
-    CreditCardNumber    VARCHAR(25),
-    AvgRating           DECIMAL(3,2),
+    CreditCardNumber    INT(25),
+    
     PRIMARY KEY (CustomerID),
     UNIQUE (AccountNumber)
 );
@@ -51,8 +51,8 @@ CREATE TABLE Actor (
     ActorID   INT IDENTITY(1,1),
     [Name]    VARCHAR(120) NOT NULL,
     Gender    CHAR(1)      CHECK (Gender IN ('M','F')),
-    Age       INT          CHECK (Age IS NULL OR (Age BETWEEN 0 AND 125)),
-    AvgRating DECIMAL(3,2),
+    DateOfBirth DATE,
+    
     PRIMARY KEY (ActorID)
 );
 
@@ -64,7 +64,7 @@ CREATE TABLE Movie (
     MovieType VARCHAR(10)  NOT NULL CHECK (MovieType IN ('Comedy','Drama','Action','Foreign')),
     Fee       NUMERIC(6,2) NOT NULL,
     NumOfCopy INT          NOT NULL CHECK (NumOfCopy >= 0),
-    AvgRating DECIMAL(3,2),
+    
     PRIMARY KEY (MovieID)
 );
 
@@ -100,7 +100,7 @@ CREATE TABLE Movie_Queue (
     MovieID          INT        NOT NULL,
     PositionInQueue  INT        NOT NULL CHECK (PositionInQueue > 0),
     AddedAt          DATETIME2  NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (CustomerID, PositionInQueue),
+    PRIMARY KEY (CustomerID, MovieID),
     UNIQUE (CustomerID, MovieID),
     FOREIGN KEY (CustomerID) REFERENCES Customer (CustomerID) ON DELETE CASCADE,
     FOREIGN KEY (MovieID)    REFERENCES Movie    (MovieID)    ON DELETE CASCADE
