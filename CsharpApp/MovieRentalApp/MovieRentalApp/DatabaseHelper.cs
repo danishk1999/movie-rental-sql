@@ -9,7 +9,7 @@ namespace MovieRentalApp
     {
         
         private static readonly string connectionString =
-            "Server=ABOOD\\MSSQLSERVER01;Database=Proj2025F;Trusted_Connection=True;";
+            "Server=LAPTOP-68069FKM;Database=Proj2025F;Trusted_Connection=True;";
 
         public static SqlConnection GetConnection()
         {
