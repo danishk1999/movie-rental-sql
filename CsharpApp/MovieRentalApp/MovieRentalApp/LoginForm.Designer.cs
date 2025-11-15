@@ -26,47 +26,52 @@
             // 
             // txtUsername
             // 
-            this.txtUsername.Location = new System.Drawing.Point(110, 30);
+            this.txtUsername.Location = new System.Drawing.Point(94, 26);
             this.txtUsername.Name = "txtUsername";
-            this.txtUsername.Size = new System.Drawing.Size(150, 23);
+            this.txtUsername.Size = new System.Drawing.Size(129, 20);
+            this.txtUsername.TabIndex = 2;
             // 
             // txtPassword
             // 
-            this.txtPassword.Location = new System.Drawing.Point(110, 70);
+            this.txtPassword.Location = new System.Drawing.Point(94, 61);
             this.txtPassword.Name = "txtPassword";
             this.txtPassword.PasswordChar = '*';
-            this.txtPassword.Size = new System.Drawing.Size(150, 23);
+            this.txtPassword.Size = new System.Drawing.Size(129, 20);
+            this.txtPassword.TabIndex = 3;
             // 
             // lblUsername
             // 
             this.lblUsername.AutoSize = true;
-            this.lblUsername.Location = new System.Drawing.Point(25, 33);
+            this.lblUsername.Location = new System.Drawing.Point(21, 29);
             this.lblUsername.Name = "lblUsername";
-            this.lblUsername.Size = new System.Drawing.Size(63, 15);
+            this.lblUsername.Size = new System.Drawing.Size(58, 13);
+            this.lblUsername.TabIndex = 0;
             this.lblUsername.Text = "Username:";
             // 
             // lblPassword
             // 
             this.lblPassword.AutoSize = true;
-            this.lblPassword.Location = new System.Drawing.Point(25, 73);
+            this.lblPassword.Location = new System.Drawing.Point(21, 63);
             this.lblPassword.Name = "lblPassword";
-            this.lblPassword.Size = new System.Drawing.Size(60, 15);
+            this.lblPassword.Size = new System.Drawing.Size(56, 13);
+            this.lblPassword.TabIndex = 1;
             this.lblPassword.Text = "Password:";
             // 
             // btnLogin
             // 
-            this.btnLogin.Location = new System.Drawing.Point(110, 110);
+            this.btnLogin.Location = new System.Drawing.Point(58, 100);
             this.btnLogin.Name = "btnLogin";
-            this.btnLogin.Size = new System.Drawing.Size(150, 30);
+            this.btnLogin.Size = new System.Drawing.Size(129, 26);
+            this.btnLogin.TabIndex = 4;
             this.btnLogin.Text = "Login";
             this.btnLogin.UseVisualStyleBackColor = true;
             this.btnLogin.Click += new System.EventHandler(this.btnLogin_Click);
             // 
             // LoginForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(300, 170);
+            this.ClientSize = new System.Drawing.Size(257, 147);
             this.Controls.Add(this.lblUsername);
             this.Controls.Add(this.lblPassword);
             this.Controls.Add(this.txtUsername);
@@ -78,6 +83,7 @@
             this.Load += new System.EventHandler(this.LoginForm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
+
         }
 
         #endregion

@@ -27,5 +27,13 @@ namespace MovieRentalApp
             moviesForm.StartPosition = FormStartPosition.CenterScreen;
             moviesForm.ShowDialog();
         }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            using (var form = new RentalForm())
+            {
+                form.ShowDialog();
+            }
+        }
     }
 }

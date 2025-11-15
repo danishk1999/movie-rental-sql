@@ -33,5 +33,10 @@ namespace MovieRentalApp
         {
             this.Text = "Login";
         }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            DatabaseHelper.TestConnection();
+        }
     }
 }
