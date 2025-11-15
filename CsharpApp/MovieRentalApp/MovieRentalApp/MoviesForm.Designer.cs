@@ -4,6 +4,11 @@
     {
         private System.ComponentModel.IContainer components = null;
 
+        private System.Windows.Forms.DataGridView dgvMovies;
+        private System.Windows.Forms.Button btnAdd;
+        private System.Windows.Forms.Button btnEdit;
+        private System.Windows.Forms.Button btnDelete;
+
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -17,36 +22,57 @@
 
         private void InitializeComponent()
         {
-            this.label1 = new System.Windows.Forms.Label();
+            this.dgvMovies = new System.Windows.Forms.DataGridView();
+            this.btnAdd = new System.Windows.Forms.Button();
+            this.btnEdit = new System.Windows.Forms.Button();
+            this.btnDelete = new System.Windows.Forms.Button();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvMovies)).BeginInit();
             this.SuspendLayout();
             // 
-            // label1
+            // dgvMovies
             // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(213, 135);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(0, 29);
-            this.label1.TabIndex = 0;
+            this.dgvMovies.Location = new System.Drawing.Point(20, 20);
+            this.dgvMovies.Size = new System.Drawing.Size(1020, 300);
+            this.dgvMovies.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgvMovies.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgvMovies.MultiSelect = false;
+            // 
+            // btnAdd
+            // 
+            this.btnAdd.Text = "Add Movie";
+            this.btnAdd.Location = new System.Drawing.Point(20, 340);
+            this.btnAdd.Size = new System.Drawing.Size(100, 40);
+            this.btnAdd.Click += new System.EventHandler(this.btnAdd_Click);
+            // 
+            // btnEdit
+            // 
+            this.btnEdit.Text = "Edit Movie";
+            this.btnEdit.Location = new System.Drawing.Point(140, 340);
+            this.btnEdit.Size = new System.Drawing.Size(100, 40);
+            this.btnEdit.Click += new System.EventHandler(this.btnEdit_Click);
+            // 
+            // btnDelete
+            // 
+            this.btnDelete.Text = "Delete Movie";
+            this.btnDelete.Location = new System.Drawing.Point(260, 340);
+            this.btnDelete.Size = new System.Drawing.Size(100, 40);
+            this.btnDelete.Click += new System.EventHandler(this.btnDelete_Click);
             // 
             // MoviesForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1067, 554);
-            this.Controls.Add(this.label1);
-            this.Margin = new System.Windows.Forms.Padding(4);
+            this.ClientSize = new System.Drawing.Size(1060, 400);
+            this.Controls.Add(this.dgvMovies);
+            this.Controls.Add(this.btnAdd);
+            this.Controls.Add(this.btnEdit);
+            this.Controls.Add(this.btnDelete);
             this.Name = "MoviesForm";
             this.Text = "Movies Management";
             this.Load += new System.EventHandler(this.MoviesForm_Load);
+            ((System.ComponentModel.ISupportInitialize)(this.dgvMovies)).EndInit();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
         #endregion
-
-        private System.Windows.Forms.Label label1;
     }
 }

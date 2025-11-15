@@ -2,12 +2,13 @@
 using System.Data;
 using System.Data.SqlClient;
 using System.Configuration;
+using System.Windows.Forms;
 
 namespace MovieRentalApp
 {
     internal static class DatabaseHelper
     {
-        // 1) Reads the connection string from App.config
+        // Read the connection string from App.config
         private static string GetConnectionString()
         {
             return ConfigurationManager
@@ -15,14 +16,13 @@ namespace MovieRentalApp
                    .ConnectionString;
         }
 
-        // 2) Old-style helper that other forms expect
-        //    (this fixes the 'GetConnection' errors)
+        // Basic connection helper used by all forms
         public static SqlConnection GetConnection()
         {
             return new SqlConnection(GetConnectionString());
         }
 
-        // 3) Simple test connection method
+        // Simple test connection method (used by your Test DB button)
         public static void TestConnection()
         {
             try
@@ -33,7 +33,7 @@ namespace MovieRentalApp
                     conn.Open();
                     int result = (int)cmd.ExecuteScalar();
 
-                    System.Windows.Forms.MessageBox.Show(
+                    MessageBox.Show(
                         "Database connection OK! Test query returned: " + result,
                         "Success"
                     );
@@ -41,14 +41,14 @@ namespace MovieRentalApp
             }
             catch (Exception ex)
             {
-                System.Windows.Forms.MessageBox.Show(
+                MessageBox.Show(
                     "Database connection FAILED:\n" + ex.Message,
                     "Error"
                 );
             }
         }
 
-        // 4) (Optional but useful later) generic SELECT helper
+        // Generic SELECT helper (used by CustomersForm, RentalForm, Reports, etc.)
         public static DataTable ExecuteSelect(string query, params SqlParameter[] parameters)
         {
             var dt = new DataTable();
@@ -60,6 +60,7 @@ namespace MovieRentalApp
                     cmd.Parameters.AddRange(parameters);
 
                 conn.Open();
+
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
                     dt.Load(reader);
@@ -69,7 +70,7 @@ namespace MovieRentalApp
             return dt;
         }
 
-        // 5) (Optional but useful later) generic INSERT/UPDATE/DELETE helper
+        // Generic INSERT/UPDATE/DELETE helper
         public static int ExecuteNonQuery(string query, params SqlParameter[] parameters)
         {
             using (SqlConnection conn = GetConnection())
