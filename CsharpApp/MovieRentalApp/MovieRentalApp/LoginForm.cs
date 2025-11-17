@@ -8,52 +8,35 @@ namespace MovieRentalApp
         public LoginForm()
         {
             InitializeComponent();
-            this.button1.Click += button1_Click;
+        }
+
+        private void btnLogin_Click(object sender, EventArgs e)
+        {
+            string username = txtUsername.Text.Trim();
+            string password = txtPassword.Text.Trim();
+
+            if (username == "admin" && password == "1234")
+            {
+                MessageBox.Show("Login successful!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                this.Hide();
+                MainForm mainForm = new MainForm();
+                mainForm.ShowDialog();
+                this.Close();
+            }
+            else
+            {
+                MessageBox.Show("Invalid username or password.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void LoginForm_Load(object sender, EventArgs e)
+        {
+            this.Text = "Login";
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            string username = txtUsername.Text.Trim();
-            string password = txtPassword.Text;
-
-            if (username == "admin" && password == "1234")
-            {
-                MessageBox.Show("Login successful!");
-                this.Hide();
-
-                var main = new MainForm();
-                main.StartPosition = FormStartPosition.CenterScreen;
-                main.FormClosed += (s, args) => this.Show();
-                main.Show();
-            }
-            else
-            {
-                MessageBox.Show("Invalid username or password.");
-            }
-        }
-
-        private void LoginForm_Load(object sender, EventArgs e)
-        {
-        }
-
-        private void flowLayoutPanel1_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void LoginForm_Load(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label3_Click(object sender, EventArgs e)
-        {
-
+            DatabaseHelper.TestConnection();
         }
     }
 }
