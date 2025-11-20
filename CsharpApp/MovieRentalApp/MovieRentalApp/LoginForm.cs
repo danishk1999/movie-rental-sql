@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data.SqlClient;
 using System.Windows.Forms;
 
 namespace MovieRentalApp
@@ -10,31 +11,108 @@ namespace MovieRentalApp
             InitializeComponent();
         }
 
+        private void LoginForm_Load(object sender, EventArgs e)
+        {
+            this.Text = "Employee Login";
+        }
+
         private void btnLogin_Click(object sender, EventArgs e)
         {
             string username = txtUsername.Text.Trim();
             string password = txtPassword.Text.Trim();
 
-            if (username == "admin" && password == "1234")
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
             {
-                MessageBox.Show("Login successful!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(
+                    "Please enter both username and password.",
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+                return;
+            }
+
+            try
+            {
+                using (SqlConnection conn = DatabaseHelper.GetConnection())
+                {
+                    conn.Open();
+
+                    string query = @"
+                        SELECT EmployeePassword, FirstName, LastName
+                        FROM Employee
+                        WHERE EmployeeUsername = @Username";
+
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@Username", username);
+
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (!reader.Read())
+                            {
+                                MessageBox.Show(
+                                    "Username not found.",
+                                    "Login Failed",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Error);
+                                return;
+                            }
+
+                            string dbPassword = reader["EmployeePassword"].ToString();
+                            string firstName = reader["FirstName"].ToString();
+                            string lastName = reader["LastName"].ToString();
+
+                            if (!string.Equals(dbPassword, password))
+                            {
+                                MessageBox.Show(
+                                    "Invalid password. Please try again.",
+                                    "Login Failed",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Error);
+                                return;
+                            }
+
+                            string fullName = firstName + " " + lastName;
+                            MessageBox.Show(
+                                $"Login successful. Welcome, {fullName}!",
+                                "Login Successful",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Information);
+                        }
+                    }
+                }
+
                 this.Hide();
-                MainForm mainForm = new MainForm();
-                mainForm.ShowDialog();
+                using (MainForm mainForm = new MainForm())
+                {
+                    mainForm.ShowDialog();
+                }
                 this.Close();
             }
-            else
+            catch (Exception ex)
             {
-                MessageBox.Show("Invalid username or password.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(
+                    "Database error: " + ex.Message,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
             }
-        }
-
-        private void LoginForm_Load(object sender, EventArgs e)
-        {
-            this.Text = "Login";
         }
 
         private void button1_Click(object sender, EventArgs e)
+        {
+            DatabaseHelper.TestConnection();
+        }
+
+        private void chkShowPassword_CheckedChanged(object sender, EventArgs e)
+        {
+            if (txtPassword != null)
+            {
+                txtPassword.PasswordChar = chkShowPassword.Checked ? '\0' : '*';
+            }
+        }
+
+        private void btnTestConnection_Click(object sender, EventArgs e)
         {
             DatabaseHelper.TestConnection();
         }

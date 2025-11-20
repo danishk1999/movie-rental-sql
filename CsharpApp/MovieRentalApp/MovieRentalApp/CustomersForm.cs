@@ -14,14 +14,12 @@ namespace MovieRentalApp
             InitializeComponent();
         }
 
-        // Load data when the form opens
         private void CustomersForm_Load(object sender, EventArgs e)
         {
-            this.Text = "Customers Management";
+            this.Text = "Customer Management";
             LoadCustomerData();
         }
 
-        //  Load all customers into the grid
         private void LoadCustomerData()
         {
             try
@@ -29,10 +27,16 @@ namespace MovieRentalApp
                 using (SqlConnection conn = DatabaseHelper.GetConnection())
                 {
                     conn.Open();
-                    string query = "SELECT CustomerID, FirstName, LastName, Email, CreationDate FROM Customer";
+
+                    string query = @"
+                        SELECT CustomerID, FirstName, LastName, Email, CreationDate
+                        FROM Customer
+                        ORDER BY CustomerID";
+
                     SqlDataAdapter da = new SqlDataAdapter(query, conn);
                     DataTable dt = new DataTable();
                     da.Fill(dt);
+
                     gridCustomers.DataSource = dt;
                 }
             }
@@ -42,16 +46,19 @@ namespace MovieRentalApp
             }
         }
 
-        //  Add a new customer
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            string name = txtName.Text.Trim();
+            string firstName = txtFirstName.Text.Trim();
+            string lastName = txtLastName.Text.Trim();
             string email = txtEmail.Text.Trim();
             string phone = txtPhone.Text.Trim();
 
-            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(phone))
+            if (string.IsNullOrEmpty(firstName) ||
+                string.IsNullOrEmpty(lastName) ||
+                string.IsNullOrEmpty(email) ||
+                string.IsNullOrEmpty(phone))
             {
-                MessageBox.Show("Please fill all fields.");
+                MessageBox.Show("Please fill First Name, Last Name, Email and Phone.");
                 return;
             }
 
@@ -61,21 +68,59 @@ namespace MovieRentalApp
                 {
                     conn.Open();
 
-                    string sql = @"
+                    string sqlCustomer = @"
                         INSERT INTO Customer (
-                            CustomerID, LastName, FirstName, Address, City, Province, PostalCode, Email, 
-                            AccountNum, CreditCardNum, CreditCardExp, CreditCardCvv, CreationDate
-                        ) VALUES (
-                            NEXT VALUE FOR Customer_CustomerID_Seq, @LastName, @FirstName, 'N/A', 'N/A', 'AB', 
-                            'A1A1A1', @Email, 'ACC123', '0000111122223333', '1225', '123', GETDATE()
-                        )";
+                            CustomerID,
+                            LastName,
+                            FirstName,
+                            Address,
+                            City,
+                            Province,
+                            PostalCode,
+                            Email,
+                            AccountNum,
+                            CreditCardNum,
+                            CreditCardExp,
+                            CreditCardCvv,
+                            CreationDate
+                        )
+                        OUTPUT INSERTED.CustomerID
+                        VALUES (
+                            NEXT VALUE FOR Customer_CustomerID_Seq,
+                            @LastName,
+                            @FirstName,
+                            'N/A',
+                            'N/A',
+                            'AB',
+                            'A1A1A1',
+                            @Email,
+                            'ACC123',
+                            '0000111122223333',
+                            '1225',
+                            '123',
+                            GETDATE()
+                        );";
 
-                    using (SqlCommand cmd = new SqlCommand(sql, conn))
+                    int newCustomerID;
+                    using (SqlCommand cmd = new SqlCommand(sqlCustomer, conn))
                     {
-                        cmd.Parameters.AddWithValue("@FirstName", name);
-                        cmd.Parameters.AddWithValue("@LastName", name);
+                        cmd.Parameters.AddWithValue("@FirstName", firstName);
+                        cmd.Parameters.AddWithValue("@LastName", lastName);
                         cmd.Parameters.AddWithValue("@Email", email);
-                        cmd.ExecuteNonQuery();
+
+                        newCustomerID = (int)cmd.ExecuteScalar();
+                    }
+
+                    string sqlPhone = @"
+                        INSERT INTO CustomerPhone (CustomerID, PhoneNum, PhoneType, StartTime, EndTime)
+                        VALUES (@CustomerID, @PhoneNum, @PhoneType, GETDATE(), NULL);";
+
+                    using (SqlCommand cmdPhone = new SqlCommand(sqlPhone, conn))
+                    {
+                        cmdPhone.Parameters.AddWithValue("@CustomerID", newCustomerID);
+                        cmdPhone.Parameters.AddWithValue("@PhoneNum", phone.PadRight(10));
+                        cmdPhone.Parameters.AddWithValue("@PhoneType", "Mobile");
+                        cmdPhone.ExecuteNonQuery();
                     }
                 }
 
@@ -89,66 +134,22 @@ namespace MovieRentalApp
             }
         }
 
-
         private void btnUpdate_Click(object sender, EventArgs e)
         {
-            // Make sure a customer was selected
-            if (selectedCustomerID == -1)
+            if (gridCustomers.SelectedRows.Count == 0)
             {
-                MessageBox.Show("Please select a customer to update.");
+                MessageBox.Show("Please select a customer to edit.");
                 return;
             }
 
-            string name = txtName.Text.Trim();
-            string email = txtEmail.Text.Trim();
-            string phone = txtPhone.Text.Trim(); 
+            int customerID = Convert.ToInt32(gridCustomers.SelectedRows[0].Cells["CustomerID"].Value);
 
-            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(email))
+            EditCustomerForm editForm = new EditCustomerForm(customerID);
+            if (editForm.ShowDialog() == DialogResult.OK)
             {
-                MessageBox.Show("Name and Email cannot be empty.");
-                return;
-            }
-
-            try
-            {
-                using (SqlConnection conn = DatabaseHelper.GetConnection())
-                {
-                    conn.Open();
-
-                    string sql = @"
-                UPDATE Customer
-                SET FirstName = @FirstName,
-                    LastName = @LastName,
-                    Email = @Email
-                WHERE CustomerID = @CustomerID
-            ";
-
-                    using (SqlCommand cmd = new SqlCommand(sql, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@FirstName", name);
-                        cmd.Parameters.AddWithValue("@LastName", name); 
-                        cmd.Parameters.AddWithValue("@Email", email);
-                        cmd.Parameters.AddWithValue("@CustomerID", selectedCustomerID);
-
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-
-                MessageBox.Show("Customer updated successfully!");
-
-                // Refresh grid
                 LoadCustomerData();
-
-                // Reset selection
-                selectedCustomerID = -1;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error updating customer: " + ex.Message);
             }
         }
-
-
 
         private void btnDelete_Click(object sender, EventArgs e)
         {
@@ -158,8 +159,8 @@ namespace MovieRentalApp
                 return;
             }
 
-            int customerID = Convert.ToInt32(
-                gridCustomers.SelectedRows[0].Cells["CustomerID"].Value);
+            int customerID = Convert.ToInt32(gridCustomers.SelectedRows[0]
+                                             .Cells["CustomerID"].Value);
 
             DialogResult confirm = MessageBox.Show(
                 "Are you sure you want to delete this customer?",
@@ -176,55 +177,46 @@ namespace MovieRentalApp
                 {
                     conn.Open();
 
-                    // 1. Delete ActorRate
                     string deleteActorRate = @"
-                        DELETE FROM ActorRate 
+                        DELETE FROM ActorRate
                         WHERE RentalRecordID IN (
-                            SELECT RentalRecordID 
-                            FROM RentalRecord 
+                            SELECT RentalRecordID
+                            FROM RentalRecord
                             WHERE CustomerID = @CustomerID
-                        )";
+                        );";
 
-                    using (SqlCommand cmd0 = new SqlCommand(deleteActorRate, conn))
+                    using (SqlCommand cmd = new SqlCommand(deleteActorRate, conn))
                     {
-                        cmd0.Parameters.AddWithValue("@CustomerID", customerID);
-                        cmd0.ExecuteNonQuery();
+                        cmd.Parameters.AddWithValue("@CustomerID", customerID);
+                        cmd.ExecuteNonQuery();
                     }
 
-                    // 2. Delete CustomerPhone
-                    string deletePhones = "DELETE FROM CustomerPhone WHERE CustomerID = @CustomerID";
-
-                    using (SqlCommand cmd1 = new SqlCommand(deletePhones, conn))
+                    string deletePhones = "DELETE FROM CustomerPhone WHERE CustomerID = @CustomerID;";
+                    using (SqlCommand cmd = new SqlCommand(deletePhones, conn))
                     {
-                        cmd1.Parameters.AddWithValue("@CustomerID", customerID);
-                        cmd1.ExecuteNonQuery();
+                        cmd.Parameters.AddWithValue("@CustomerID", customerID);
+                        cmd.ExecuteNonQuery();
                     }
 
-                    // 3. Delete CustomerQueue
-                    string deleteQueue = "DELETE FROM CustomerQueue WHERE CustomerID = @CustomerID";
-
-                    using (SqlCommand cmd2 = new SqlCommand(deleteQueue, conn))
+                    string deleteQueue = "DELETE FROM CustomerQueue WHERE CustomerID = @CustomerID;";
+                    using (SqlCommand cmd = new SqlCommand(deleteQueue, conn))
                     {
-                        cmd2.Parameters.AddWithValue("@CustomerID", customerID);
-                        cmd2.ExecuteNonQuery();
+                        cmd.Parameters.AddWithValue("@CustomerID", customerID);
+                        cmd.ExecuteNonQuery();
                     }
 
-                    // 4. Delete RentalRecord
-                    string deleteRentals = "DELETE FROM RentalRecord WHERE CustomerID = @CustomerID";
-
-                    using (SqlCommand cmd3 = new SqlCommand(deleteRentals, conn))
+                    string deleteRentals = "DELETE FROM RentalRecord WHERE CustomerID = @CustomerID;";
+                    using (SqlCommand cmd = new SqlCommand(deleteRentals, conn))
                     {
-                        cmd3.Parameters.AddWithValue("@CustomerID", customerID);
-                        cmd3.ExecuteNonQuery();
+                        cmd.Parameters.AddWithValue("@CustomerID", customerID);
+                        cmd.ExecuteNonQuery();
                     }
 
-                    // 5. Delete Customer
-                    string deleteCustomer = "DELETE FROM Customer WHERE CustomerID = @CustomerID";
-
-                    using (SqlCommand cmd4 = new SqlCommand(deleteCustomer, conn))
+                    string deleteCustomer = "DELETE FROM Customer WHERE CustomerID = @CustomerID;";
+                    using (SqlCommand cmd = new SqlCommand(deleteCustomer, conn))
                     {
-                        cmd4.Parameters.AddWithValue("@CustomerID", customerID);
-                        cmd4.ExecuteNonQuery();
+                        cmd.Parameters.AddWithValue("@CustomerID", customerID);
+                        cmd.ExecuteNonQuery();
                     }
                 }
 
@@ -238,53 +230,13 @@ namespace MovieRentalApp
             }
         }
 
-        // CLEAR BUTTON 
-        private void btnClear_Click(object sender, EventArgs e)
-        {
-            ClearFields();
-        }
-
-       
-        private void ClearFields()
-        {
-            txtName.Text = "";
-            txtEmail.Text = "";
-            txtPhone.Text = "";
-
-            // Clear any selected row
-            gridCustomers.ClearSelection();
-
-          
-            txtName.Focus();
-        }
-
-        private void lblName_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void txtPhone_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void lblTitle_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void txtSearch_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
         private void btnSearch_Click(object sender, EventArgs e)
         {
             string keyword = txtSearch.Text.Trim();
 
             if (string.IsNullOrEmpty(keyword))
             {
-                MessageBox.Show("Please enter a name or email to search.");
+                LoadCustomerData();
                 return;
             }
 
@@ -295,12 +247,12 @@ namespace MovieRentalApp
                     conn.Open();
 
                     string sql = @"
-                SELECT CustomerID, FirstName, LastName, Email, CreationDate
-                FROM Customer
-                WHERE FirstName LIKE @key
-                   OR LastName LIKE @key
-                   OR Email LIKE @key
-            ";
+                        SELECT CustomerID, FirstName, LastName, Email, CreationDate
+                        FROM Customer
+                        WHERE FirstName LIKE @key
+                           OR LastName  LIKE @key
+                           OR Email     LIKE @key
+                        ORDER BY CustomerID;";
 
                     using (SqlCommand cmd = new SqlCommand(sql, conn))
                     {
@@ -309,6 +261,11 @@ namespace MovieRentalApp
                         SqlDataAdapter da = new SqlDataAdapter(cmd);
                         DataTable dt = new DataTable();
                         da.Fill(dt);
+
+                        if (dt.Rows.Count == 0)
+                        {
+                            MessageBox.Show("No customers found.");
+                        }
 
                         gridCustomers.DataSource = dt;
                     }
@@ -321,20 +278,67 @@ namespace MovieRentalApp
         }
 
         private void gridCustomers_CellClick(object sender, DataGridViewCellEventArgs e)
-
         {
-            if (e.RowIndex >= 0) // make sure user didn't click header
+            if (e.RowIndex < 0) return;
+
+            DataGridViewRow row = gridCustomers.Rows[e.RowIndex];
+            selectedCustomerID = Convert.ToInt32(row.Cells["CustomerID"].Value);
+
+            txtFirstName.Text = row.Cells["FirstName"].Value.ToString();
+            txtLastName.Text = row.Cells["LastName"].Value.ToString();
+            txtEmail.Text = row.Cells["Email"].Value.ToString();
+
+            try
             {
-                DataGridViewRow row = gridCustomers.Rows[e.RowIndex];
+                using (SqlConnection conn = DatabaseHelper.GetConnection())
+                {
+                    conn.Open();
 
-                txtName.Text = row.Cells["FirstName"].Value.ToString();
-                txtEmail.Text = row.Cells["Email"].Value.ToString();
-                txtPhone.Text = ""; // you don't have phone stored in DB yet
+                    string queryPhone = @"
+                        SELECT TOP 1 PhoneNum
+                        FROM CustomerPhone
+                        WHERE CustomerID = @CustomerID
+                        ORDER BY StartTime DESC;";
 
-                // Store CustomerID in a hidden place for updating
-                selectedCustomerID = Convert.ToInt32(row.Cells["CustomerID"].Value);
+                    using (SqlCommand cmdPhone = new SqlCommand(queryPhone, conn))
+                    {
+                        cmdPhone.Parameters.AddWithValue("@CustomerID", selectedCustomerID);
+
+                        object result = cmdPhone.ExecuteScalar();
+                        if (result != null)
+                            txtPhone.Text = result.ToString().Trim();
+                        else
+                            txtPhone.Text = "";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading phone number: " + ex.Message);
             }
         }
 
+        private void ClearFields()
+        {
+            txtFirstName.Text = "";
+            txtLastName.Text = "";
+            txtEmail.Text = "";
+            txtPhone.Text = "";
+            txtSearch.Text = "";
+            gridCustomers.ClearSelection();
+            selectedCustomerID = -1;
+            txtFirstName.Focus();
+        }
+
+        private void btnClear_Click(object sender, EventArgs e)
+        {
+            ClearFields();
+            LoadCustomerData();
+        }
+
+        private void txtSearch_TextChanged(object sender, EventArgs e) { }
+        private void lblFirstName_Click(object sender, EventArgs e) { }
+        private void lblTitle_Click(object sender, EventArgs e) { }
+        private void txtPhone_TextChanged(object sender, EventArgs e) { }
     }
 }
