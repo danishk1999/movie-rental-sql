@@ -5,8 +5,10 @@ using System.Windows.Forms;
 
 namespace MovieRentalApp
 {
+ 
     public partial class CustomersForm : Form
     {
+        // store the selected customer ID
         private int selectedCustomerID = -1;
 
         public CustomersForm()
@@ -19,40 +21,100 @@ namespace MovieRentalApp
             this.Text = "Customer Management";
             LoadCustomerData();
         }
+        //load all cutomers from the database
 
         private void LoadCustomerData()
         {
+
             try
+
+
             {
+
                 using (SqlConnection conn = DatabaseHelper.GetConnection())
                 {
-                    conn.Open();
-
+                   conn.Open();
                     string query = @"
+
                         SELECT CustomerID, FirstName, LastName, Email, CreationDate
                         FROM Customer
                         ORDER BY CustomerID";
 
                     SqlDataAdapter da = new SqlDataAdapter(query, conn);
+
                     DataTable dt = new DataTable();
+
                     da.Fill(dt);
+                    // Hide customer ID column from user
 
                     gridCustomers.DataSource = dt;
+
+
+                    gridCustomers.Columns["CustomerID"].Visible = false;
                 }
+
             }
+
+
             catch (Exception ex)
             {
+
                 MessageBox.Show("Error loading customers: " + ex.Message);
             }
         }
+        //check if the phone number inpuuted is valid for the cusomer
+        private bool ValidatePhoneNumber(string phone)
+        {
+            if (phone.Length != 10)
+            {
+                MessageBox.Show("Phone number must be exactly 10 digits.", "Invalid Phone", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+            // Check if each character is  number
+            foreach (char c in phone)
+            {
+                if (!char.IsDigit(c))
+                {
+                    MessageBox.Show("Phone number must contain only digits (0-9).", "Invalid Phone", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return false;
+                }
+            }
 
+            return true;
+        }
+        // Check if email is valid
+        private bool ValidateEmail(string email)
+        {
+            if (!email.Contains("@"))
+            {
+                MessageBox.Show("Email must contain @ symbol.", "Invalid Email", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+
+            string[] parts = email.Split('@');
+            // Check domain has a dot (like .com or .ca)
+            if (parts.Length != 2 || string.IsNullOrEmpty(parts[0]) || string.IsNullOrEmpty(parts[1]))
+            {
+                MessageBox.Show("Email format is invalid.", "Invalid Email", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+
+            if (!parts[1].Contains("."))
+            {
+                MessageBox.Show("Email must have a valid domain (e.g., gmail.com).", "Invalid Email", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+
+            return true;
+        }
+        // Add new customer button
         private void btnAdd_Click(object sender, EventArgs e)
         {
             string firstName = txtFirstName.Text.Trim();
             string lastName = txtLastName.Text.Trim();
             string email = txtEmail.Text.Trim();
             string phone = txtPhone.Text.Trim();
-
+            // Check all fields are filled
             if (string.IsNullOrEmpty(firstName) ||
                 string.IsNullOrEmpty(lastName) ||
                 string.IsNullOrEmpty(email) ||
@@ -61,13 +123,23 @@ namespace MovieRentalApp
                 MessageBox.Show("Please fill First Name, Last Name, Email and Phone.");
                 return;
             }
+            // Validate email and phone
+            if (!ValidateEmail(email))
+            {
+                return;
+            }
+
+            if (!ValidatePhoneNumber(phone))
+            {
+                return;
+            }
 
             try
             {
                 using (SqlConnection conn = DatabaseHelper.GetConnection())
                 {
                     conn.Open();
-
+                    // Insert new customer into database
                     string sqlCustomer = @"
                         INSERT INTO Customer (
                             CustomerID,
@@ -110,7 +182,7 @@ namespace MovieRentalApp
 
                         newCustomerID = (int)cmd.ExecuteScalar();
                     }
-
+                    // Insert the phone number into the CustomerPhone table
                     string sqlPhone = @"
                         INSERT INTO CustomerPhone (CustomerID, PhoneNum, PhoneType, StartTime, EndTime)
                         VALUES (@CustomerID, @PhoneNum, @PhoneType, GETDATE(), NULL);";
@@ -118,7 +190,7 @@ namespace MovieRentalApp
                     using (SqlCommand cmdPhone = new SqlCommand(sqlPhone, conn))
                     {
                         cmdPhone.Parameters.AddWithValue("@CustomerID", newCustomerID);
-                        cmdPhone.Parameters.AddWithValue("@PhoneNum", phone.PadRight(10));
+                        cmdPhone.Parameters.AddWithValue("@PhoneNum", phone);
                         cmdPhone.Parameters.AddWithValue("@PhoneType", "Mobile");
                         cmdPhone.ExecuteNonQuery();
                     }
@@ -133,7 +205,7 @@ namespace MovieRentalApp
                 MessageBox.Show("Error adding customer: " + ex.Message);
             }
         }
-
+        // Update button open the edit window to edit thge custome info
         private void btnUpdate_Click(object sender, EventArgs e)
         {
             if (gridCustomers.SelectedRows.Count == 0)
@@ -143,14 +215,14 @@ namespace MovieRentalApp
             }
 
             int customerID = Convert.ToInt32(gridCustomers.SelectedRows[0].Cells["CustomerID"].Value);
-
+            // Open the edit form
             EditCustomerForm editForm = new EditCustomerForm(customerID);
             if (editForm.ShowDialog() == DialogResult.OK)
             {
                 LoadCustomerData();
             }
         }
-
+        // Delete the customers
         private void btnDelete_Click(object sender, EventArgs e)
         {
             if (gridCustomers.SelectedRows.Count == 0)
@@ -159,8 +231,7 @@ namespace MovieRentalApp
                 return;
             }
 
-            int customerID = Convert.ToInt32(gridCustomers.SelectedRows[0]
-                                             .Cells["CustomerID"].Value);
+            int customerID = Convert.ToInt32(gridCustomers.SelectedRows[0].Cells["CustomerID"].Value);
 
             DialogResult confirm = MessageBox.Show(
                 "Are you sure you want to delete this customer?",
@@ -229,11 +300,12 @@ namespace MovieRentalApp
                 MessageBox.Show("Error deleting customer: " + ex.Message);
             }
         }
-
+        // Search for customers by name or email
         private void btnSearch_Click(object sender, EventArgs e)
         {
-            string keyword = txtSearch.Text.Trim();
 
+            string keyword = txtSearch.Text.Trim();
+            // If search box is empty, show all customers
             if (string.IsNullOrEmpty(keyword))
             {
                 LoadCustomerData();
@@ -268,6 +340,7 @@ namespace MovieRentalApp
                         }
 
                         gridCustomers.DataSource = dt;
+                        gridCustomers.Columns["CustomerID"].Visible = false;
                     }
                 }
             }
@@ -276,6 +349,7 @@ namespace MovieRentalApp
                 MessageBox.Show("Error searching customers: " + ex.Message);
             }
         }
+        // When user clicks a row in the grid, load that customer data
 
         private void gridCustomers_CellClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -283,6 +357,8 @@ namespace MovieRentalApp
 
             DataGridViewRow row = gridCustomers.Rows[e.RowIndex];
             selectedCustomerID = Convert.ToInt32(row.Cells["CustomerID"].Value);
+
+            // Fill the text boxes with customer info
 
             txtFirstName.Text = row.Cells["FirstName"].Value.ToString();
             txtLastName.Text = row.Cells["LastName"].Value.ToString();
@@ -293,7 +369,7 @@ namespace MovieRentalApp
                 using (SqlConnection conn = DatabaseHelper.GetConnection())
                 {
                     conn.Open();
-
+                    // Get phone number from CustomerPhone table
                     string queryPhone = @"
                         SELECT TOP 1 PhoneNum
                         FROM CustomerPhone
@@ -317,7 +393,7 @@ namespace MovieRentalApp
                 MessageBox.Show("Error loading phone number: " + ex.Message);
             }
         }
-
+        // Clear all text boxes
         private void ClearFields()
         {
             txtFirstName.Text = "";

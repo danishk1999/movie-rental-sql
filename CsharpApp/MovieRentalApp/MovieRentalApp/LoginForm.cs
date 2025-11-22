@@ -106,15 +106,9 @@ namespace MovieRentalApp
 
         private void chkShowPassword_CheckedChanged(object sender, EventArgs e)
         {
-            if (txtPassword != null)
-            {
-                txtPassword.PasswordChar = chkShowPassword.Checked ? '\0' : '*';
-            }
+            txtPassword.PasswordChar = chkShowPassword.Checked ? '\0' : '*';
         }
 
-        private void btnTestConnection_Click(object sender, EventArgs e)
-        {
-            DatabaseHelper.TestConnection();
-        }
+        
     }
 }
