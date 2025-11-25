@@ -66,6 +66,18 @@
     <Compile Include="EditCustomerForm.Designer.cs">
       <DependentUpon>EditCustomerForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="MonthlyEarnings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MonthlyEarnings.Designer.cs">
+      <DependentUpon>MonthlyEarnings.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Reports.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Reports.Designer.cs">
+      <DependentUpon>Reports.cs</DependentUpon>
+    </Compile>
     <Compile Include="LoginForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -77,6 +89,12 @@
     </Compile>
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MonthlyEarnings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MonthlyEarnings.Designer.cs">
+      <DependentUpon>MonthlyEarnings.cs</DependentUpon>
     </Compile>
     <Compile Include="MoviesForm.cs">
       <SubType>Form</SubType>
@@ -92,6 +110,12 @@
     <Compile Include="RentalForm.Designer.cs">
       <DependentUpon>RentalForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Reports.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Reports.Designer.cs">
+      <DependentUpon>Reports.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="CustomersForm.resx">
       <DependentUpon>CustomersForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -103,6 +127,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MonthlyEarnings.resx">
+      <DependentUpon>MonthlyEarnings.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MoviesForm.resx">
       <DependentUpon>MoviesForm.cs</DependentUpon>
@@ -118,6 +145,9 @@
     </Compile>
     <EmbeddedResource Include="RentalForm.resx">
       <DependentUpon>RentalForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Reports.resx">
+      <DependentUpon>Reports.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

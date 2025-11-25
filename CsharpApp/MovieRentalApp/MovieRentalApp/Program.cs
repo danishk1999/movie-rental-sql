@@ -10,7 +10,10 @@ namespace MovieRentalApp
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new LoginForm());
+
+            //  Run the MonthlyEarnings form JENNY TO REMOVE
+            Application.Run(new  MainForm());
+            //Application.Run(new LoginForm());
         }
     }
 }
