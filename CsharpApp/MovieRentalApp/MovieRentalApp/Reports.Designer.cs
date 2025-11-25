@@ -35,31 +35,32 @@
             this.button5 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
-            // button1
+            // monthlyEarn
             // 
             this.monthlyEarn.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.monthlyEarn.Location = new System.Drawing.Point(109, 22);
-            this.monthlyEarn.Name = "button1";
+            this.monthlyEarn.Name = "monthlyEarn";
             this.monthlyEarn.Size = new System.Drawing.Size(305, 67);
             this.monthlyEarn.TabIndex = 0;
             this.monthlyEarn.Text = "Monthly Earnings";
             this.monthlyEarn.UseVisualStyleBackColor = true;
+            this.monthlyEarn.Click += new System.EventHandler(this.monthlyEarn_Click);
             // 
-            // button2
+            // movieRanks
             // 
             this.movieRanks.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.movieRanks.Location = new System.Drawing.Point(109, 95);
-            this.movieRanks.Name = "button2";
+            this.movieRanks.Name = "movieRanks";
             this.movieRanks.Size = new System.Drawing.Size(305, 67);
             this.movieRanks.TabIndex = 1;
             this.movieRanks.Text = "Movie Ranks";
             this.movieRanks.UseVisualStyleBackColor = true;
             // 
-            // button3
+            // custTotRentals
             // 
             this.custTotRentals.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.custTotRentals.Location = new System.Drawing.Point(109, 168);
-            this.custTotRentals.Name = "button3";
+            this.custTotRentals.Name = "custTotRentals";
             this.custTotRentals.Size = new System.Drawing.Size(305, 67);
             this.custTotRentals.TabIndex = 2;
             this.custTotRentals.Text = "Customers and Their Total Rentals";

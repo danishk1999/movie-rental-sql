@@ -16,5 +16,12 @@ namespace MovieRentalApp
         {
             InitializeComponent();
         }
+
+        private void monthlyEarn_Click(object sender, EventArgs e)
+        {
+            MonthlyEarnings monthlyEarningsForm = new MonthlyEarnings();
+            monthlyEarningsForm.ShowDialog();
+
+        }
     }
 }

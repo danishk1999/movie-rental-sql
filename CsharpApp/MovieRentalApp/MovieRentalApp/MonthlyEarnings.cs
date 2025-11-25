@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Data.SqlClient;
 
 namespace MovieRentalApp
 {
@@ -61,24 +62,14 @@ namespace MovieRentalApp
                   AND MONTH(R.CheckoutTime) = @Month;";
 
             DataTable dt = DatabaseHelper.ExecuteSelect(query,
-                new System.Data.SqlClient.SqlParameter("@Year", year),
-                new System.Data.SqlClient.SqlParameter("@Month", month)
+                new SqlParameter("@Year", year),
+                new SqlParameter("@Month", month)
             );
+            dataGridView1.DataSource = dt;
 
-            if(dt.Rows.Count > 0 && dt.Rows[0]["NumberOfRentals"] != DBNull.Value)
-            {
-                int numberOfRentals = Convert.ToInt32(dt.Rows[0]["NumberOfRentals"]);
-                decimal totalSales = Convert.ToDecimal(dt.Rows[0]["TotalSales"]);
-                MessageBox.Show(
-                    $"Number of Rentals: {numberOfRentals}\nTotal Sales: ${totalSales:F2}",
-                    "Monthly Earnings Report"
-                );
-            }
-            else
-            {
-                MessageBox.Show("No rentals found for the selected month and year.", "Monthly Earnings Report");
-            }
-            
+
+        
+
 
         }
 

@@ -35,5 +35,14 @@ namespace MovieRentalApp
                 form.ShowDialog();
             }
         }
+
+        private void btnReports_Click(object sender, EventArgs e)
+        {
+            using (var form = new Reports())
+            {
+                form.ShowDialog();
+            }
+
+        }
     }
 }
