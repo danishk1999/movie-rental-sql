@@ -1,5 +1,6 @@
 USE MovieRentalDb;
 
+-- Monthly earnings by quantity and dollar amount
 select year(R.CheckoutTime) as RentalYear, month(R.CheckoutTime) as RentalMonth,
 COUNT(*) as NumberOfRentals,
 SUM(M.Fee) as TotalSales
