@@ -12,7 +12,7 @@ namespace MovieRentalApp
         private static string GetConnectionString()
         {
             return ConfigurationManager
-                   .ConnectionStrings["MovieRentalDb"]
+                   .ConnectionStrings["Proj2025F"]
                    .ConnectionString;
         }
 
