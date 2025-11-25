@@ -1,4 +1,4 @@
-USE CMPT291_MovieRental;
+USE Proj2025F;
 GO
 
 
