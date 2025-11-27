@@ -21,13 +21,7 @@ namespace MovieRentalApp
 
         private void LoadMonthYear()
         {
-            // Load months
-            comboBoxMonth.Items.AddRange(new object[]
-            {
-                "January", "February", "March", "April", "May", "June",
-                "July", "August", "September", "October", "November", "December"
-            });
-            comboBoxMonth.SelectedIndex = 0;
+
             // Load years (e.g., last 10 years)
             int currentYear = DateTime.Now.Year;
             for (int year = currentYear; year >= currentYear - 10; year--)
@@ -39,38 +33,54 @@ namespace MovieRentalApp
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if (comboBoxMonth.SelectedIndex == -1 || comboBoxYear.SelectedIndex == -1)
-            {
-                MessageBox.Show("Please select both month and year.", "Input Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-            int month = comboBoxMonth.SelectedIndex + 1;
+
+         
             int year = int.Parse(comboBoxYear.SelectedItem.ToString());
 
-            ShowReport(month, year);
+            ShowReport(year);
 
         }
 
-        private void ShowReport(int month, int year)
-        {   
+        private void ShowReport(int year)
+        {
             string query = @"
-                SELECT COUNT(*) AS NumberOfRentals,
-                    SUM(M.Fee) AS TotalSales
-                FROM RentalRecord R
-                JOIN Movie M ON R.MovieID = M.MovieID
-                WHERE YEAR(R.CheckoutTime) = @Year
-                  AND MONTH(R.CheckoutTime) = @Month;";
+                WITH Months AS (
+                    SELECT 1 AS MonthNumber, 'January' AS MonthName UNION ALL
+                    SELECT 2, 'February' UNION ALL
+                    SELECT 3, 'March' UNION ALL
+                    SELECT 4, 'April' UNION ALL
+                    SELECT 5, 'May' UNION ALL
+                    SELECT 6, 'June' UNION ALL
+                    SELECT 7, 'July' UNION ALL
+                    SELECT 8, 'August' UNION ALL
+                    SELECT 9, 'September' UNION ALL
+                    SELECT 10, 'October' UNION ALL
+                    SELECT 11, 'November' UNION ALL
+                    SELECT 12, 'December'
+                )
+                SELECT 
+                    MonthName AS [Month],
+                    COUNT(R.MovieID) AS NumberOfRentals,
+                    ISNULL(SUM(Mo.Fee), 0) AS TotalSales
+                FROM Months M
+                LEFT JOIN RentalRecord R 
+                    ON MONTH(R.CheckoutTime) = M.MonthNumber
+                    AND YEAR(R.CheckoutTime) = @Year
+                LEFT JOIN Movie Mo 
+                    ON R.MovieID = Mo.MovieID
+                GROUP BY 
+                    M.MonthNumber, M.MonthName
+                ORDER BY 
+                    M.MonthNumber;
 
-            DataTable dt = DatabaseHelper.ExecuteSelect(query,
-                new SqlParameter("@Year", year),
-                new SqlParameter("@Month", month)
+                ";
+
+            DataTable dt = DatabaseHelper.ExecuteSelect(
+                query,
+                new SqlParameter("@Year", year)
             );
+
             dataGridView1.DataSource = dt;
-
-
-        
-
-
         }
 
 

@@ -11,9 +11,9 @@ namespace MovieRentalApp
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            //  Run the MonthlyEarnings form JENNY TO REMOVE
-            Application.Run(new  MainForm());
-            //Application.Run(new LoginForm());
+        
+            Application.Run(new  LoginForm());
+            
         }
     }
 }
