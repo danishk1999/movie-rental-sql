@@ -1,254 +1,312 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.Data.SqlClient;
+using System.Windows.Forms;
 
 namespace MovieRentalApp
 {
     public partial class RentalForm : Form
     {
+        private int selectedCustomerId = -1;
+        private int selectedMovieId = -1;
+        private int selectedRentalRecordId = -1;
+
+        private int employeeId = 2004;
+
         public RentalForm()
         {
             InitializeComponent();
-            
+
+            try { ClearCustomerDetails(); } catch { }
+
+            SearchCustomers();
+            SearchMovies();
         }
 
-        private void label1_Click(object sender, EventArgs e)
+        private void ClearCustomerDetails()
         {
-            //lets keep it empty for now reminder: this is event handles for a text
-        }
-
-
-        private void LoadCustomers()
-        {
-            try
-            {
-                string query = @"
-                    SELECT CustomerID,
-                           FirstName + ' ' + LastName AS FullName
-                    FROM Customer
-                    ORDER BY FirstName, LastName;";
-
-                DataTable dt = DatabaseHelper.ExecuteSelect(query);
-
-                // Debug message so we can see if it actually got rows
-                MessageBox.Show("LoadCustomers: rows returned = " + dt.Rows.Count);
-
-                cmbCustomer.DataSource = dt;
-                cmbCustomer.DisplayMember = "FullName";
-                cmbCustomer.ValueMember = "CustomerID";
-                cmbCustomer.SelectedIndex = -1;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error loading customers: " + ex.Message);
-            }
-        }
-
-        private void LoadMovies()
-        {
-            try
-            {
-                string query = @"
-            SELECT MovieID, MovieName
-            FROM Movie
-            ORDER BY MovieName;";
-
-                DataTable dt = DatabaseHelper.ExecuteSelect(query);
-
-                cmbMovie.DataSource = dt;
-                cmbMovie.DisplayMember = "MovieName";
-                cmbMovie.ValueMember = "MovieID";
-                cmbMovie.SelectedIndex = -1;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error loading movies: " + ex.Message);
-            }
-        }
-
-        private void LoadRentalsForCustomer(int customerId)
-        {
-            try
-            {
-                string query = @"
-            SELECT 
-                rr.RentalRecordID,
-                m.MovieName,
-                rr.CheckoutTime,
-                rr.ReturnTime
-            FROM RentalRecord rr
-            INNER JOIN Movie m ON rr.MovieID = m.MovieID
-            WHERE rr.CustomerID = @CustomerID
-            ORDER BY rr.CheckoutTime DESC;";
-
-                var param = new SqlParameter("@CustomerID", customerId);
-
-                DataTable dt = DatabaseHelper.ExecuteSelect(query, param);
-
-                gridRentals.DataSource = dt;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error loading rentals: " + ex.Message);
-            }
+            // placeholder if you later add labels
         }
 
         private void RentalForm_Load(object sender, EventArgs e)
         {
-            LoadCustomers();
-            LoadMovies();
+            SearchCustomers();
+            SearchMovies();
         }
 
-        private void gridRentals_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        // ==========================
+        // CUSTOMER SEARCH + SELECT
+        // ==========================
+        private void SearchCustomers()
         {
+            string keyword = txtCustomerSearch.Text.Trim();
 
+            string sql = @"
+        SELECT 
+            c.CustomerID,
+            c.FirstName + ' ' + c.LastName AS FullName,
+            c.Email,
+            c.CreationDate,
+            ISNULL(cp.PhoneNum, '') AS PhoneNum
+        FROM Customer c
+        LEFT JOIN CustomerPhone cp 
+            ON c.CustomerID = cp.CustomerID
+            AND cp.EndTime IS NULL             -- only current phone
+        WHERE (@key = '')
+           OR c.FirstName LIKE @like
+           OR c.LastName  LIKE @like
+           OR c.Email     LIKE @like
+        ORDER BY c.FirstName, c.LastName;";
+
+            DataTable dt = DatabaseHelper.ExecuteSelect(
+                sql,
+                new SqlParameter("@key", keyword),
+                new SqlParameter("@like", "%" + keyword + "%"));
+
+            gridCustomerResults.DataSource = dt;
+
+            // Hide internal ID
+            if (gridCustomerResults.Columns.Contains("CustomerID"))
+                gridCustomerResults.Columns["CustomerID"].Visible = false;
+
+            // Nice header for phone column
+            if (gridCustomerResults.Columns.Contains("PhoneNum"))
+                gridCustomerResults.Columns["PhoneNum"].HeaderText = "Phone";
         }
 
-        private void cmbCustomer_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            // Nothing selected – do nothing
-            if (cmbCustomer.SelectedIndex < 0)
-                return;
 
-            // Sometimes SelectedValue is a DataRowView the first time; handle that
-            if (cmbCustomer.SelectedValue is DataRowView drv)
+        private void gridCustomerResults_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0) return;
+
+            DataGridViewRow row = gridCustomerResults.Rows[e.RowIndex];
+            selectedCustomerId = Convert.ToInt32(row.Cells["CustomerID"].Value);
+            LoadRentalHistory(selectedCustomerId);
+        }
+
+        private void gridCustomerResults_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            gridCustomerResults_CellClick(sender, e);
+        }
+
+        private void txtCustomerSearch_TextChanged(object sender, EventArgs e) { }
+
+        // ==========================
+        // MOVIE SEARCH + SELECT
+        // ==========================
+        private void SearchMovies()
+        {
+            string keyword = txtMovieSearch.Text.Trim();
+
+            string sql = @"
+                SELECT 
+                    MovieID,
+                    MovieName,
+                    MovieType,
+                    Fee,
+                    NumOfCopy
+                FROM Movie
+                WHERE (@key = '')
+                   OR MovieName LIKE @like
+                ORDER BY MovieName;";
+
+            DataTable dt = DatabaseHelper.ExecuteSelect(
+                sql,
+                new SqlParameter("@key", keyword),
+                new SqlParameter("@like", "%" + keyword + "%"));
+
+            gridMovieResults.DataSource = dt;
+            if (gridMovieResults.Columns.Contains("MovieID"))
+                gridMovieResults.Columns["MovieID"].Visible = false;
+        }
+
+        private void gridMovieResults_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0) return;
+
+            DataGridViewRow row = gridMovieResults.Rows[e.RowIndex];
+            selectedMovieId = Convert.ToInt32(row.Cells["MovieID"].Value);
+        }
+
+        private void txtMovieSearch_TextChanged(object sender, EventArgs e) { }
+
+        // ==========================
+        // RENTAL HISTORY
+        // ==========================
+        private void LoadRentalHistory(int customerId)
+        {
+            string sql = @"
+        SELECT 
+            rr.RentalRecordID,
+            m.MovieName,
+            rr.CheckoutTime,
+            rr.ReturnTime,
+            rr.MovieRate
+        FROM RentalRecord rr
+        INNER JOIN Movie m ON rr.MovieID = m.MovieID
+        WHERE rr.CustomerID = @cid
+        ORDER BY rr.CheckoutTime DESC;";
+
+            DataTable dt = DatabaseHelper.ExecuteSelect(
+                sql,
+                new SqlParameter("@cid", customerId));
+
+            gridRentalHistory.DataSource = dt;
+
+            // 🔒 keep ID for logic, but hide it from the user
+            if (gridRentalHistory.Columns.Contains("RentalRecordID"))
+                gridRentalHistory.Columns["RentalRecordID"].Visible = false;
+
+            if (dt.Rows.Count == 0)
             {
-                int customerId = (int)drv["CustomerID"];
-                LoadRentalsForCustomer(customerId);
-            }
-            else if (cmbCustomer.SelectedValue != null)
-            {
-                int customerId = Convert.ToInt32(cmbCustomer.SelectedValue);
-                LoadRentalsForCustomer(customerId);
+                MessageBox.Show("No rentals found for this customer.");
             }
         }
 
-        private void label1_Click_1(object sender, EventArgs e)
+        private void gridRentalHistory_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-
+            if (e.RowIndex < 0) return;
+            DataGridViewRow row = gridRentalHistory.Rows[e.RowIndex];
+            selectedRentalRecordId = Convert.ToInt32(row.Cells["RentalRecordID"].Value);
         }
 
+        // ==========================
+        // RENT BUTTON
+        // ==========================
         private void btnRent_Click(object sender, EventArgs e)
         {
-            // Make sure a customer and movie are selected
-            if (cmbCustomer.SelectedIndex < 0)
+            if (selectedCustomerId == -1)
             {
                 MessageBox.Show("Please select a customer first.");
                 return;
             }
 
-            if (cmbMovie.SelectedIndex < 0)
+            if (selectedMovieId == -1)
             {
-                MessageBox.Show("Please select a movie to rent.");
+                MessageBox.Show("Please select a movie first.");
                 return;
             }
 
-            // Get selected IDs
-            int customerId = Convert.ToInt32(cmbCustomer.SelectedValue);
-            int movieId = Convert.ToInt32(cmbMovie.SelectedValue);
-
-            // TODO: later, get EmployeeID from login form.
-            // For now, use 1000 (John Smith from insert script)
-            int employeeId = 1000;
-
             try
             {
-                string sql = @"
-            INSERT INTO RentalRecord
-                (EmployeeID, CustomerID, MovieID, CheckoutTime, ReturnTime, MovieRate)
-            VALUES
-                (@EmpID, @CustID, @MovieID, GETDATE(), NULL, NULL);";
+                // Check stock first
+                string checkStockSql = "SELECT NumOfCopy FROM Movie WHERE MovieID = @mid";
+                DataTable stockDt = DatabaseHelper.ExecuteSelect(checkStockSql, new SqlParameter("@mid", selectedMovieId));
 
-                var parameters = new[]
+                if (stockDt.Rows.Count == 0)
                 {
-            new SqlParameter("@EmpID",  employeeId),
-            new SqlParameter("@CustID", customerId),
-            new SqlParameter("@MovieID", movieId)
-        };
+                    MessageBox.Show("Movie not found in database.");
+                    return;
+                }
 
-                int rows = DatabaseHelper.ExecuteNonQuery(sql, parameters);
+                int stock = Convert.ToInt32(stockDt.Rows[0]["NumOfCopy"]);
+                if (stock <= 0)
+                {
+                    MessageBox.Show("Movie is out of stock!");
+                    return;
+                }
+
+                // Rent movie
+                string rentSql = @"
+                    INSERT INTO RentalRecord (EmployeeID, CustomerID, MovieID, CheckoutTime, ReturnTime, MovieRate)
+                    VALUES (@EmpID, @CustID, @MovieID, GETDATE(), NULL, NULL);";
+
+                int rows = DatabaseHelper.ExecuteNonQuery(
+                    rentSql,
+                    new SqlParameter("@EmpID", employeeId),
+                    new SqlParameter("@CustID", selectedCustomerId),
+                    new SqlParameter("@MovieID", selectedMovieId));
 
                 if (rows > 0)
                 {
-                    MessageBox.Show("Rental created successfully!");
+                    // Decrease stock
+                    string updateStockSql = "UPDATE Movie SET NumOfCopy = NumOfCopy - 1 WHERE MovieID = @mid";
+                    DatabaseHelper.ExecuteNonQuery(updateStockSql, new SqlParameter("@mid", selectedMovieId));
 
-                    // Refresh the rentals grid for this customer
-                    LoadRentalsForCustomer(customerId);
+                    MessageBox.Show("Movie rented successfully!");
+                    LoadRentalHistory(selectedCustomerId);
+                    SearchMovies(); // refresh stock count in grid
                 }
                 else
                 {
-                    MessageBox.Show("No rows inserted – something went wrong.");
+                    MessageBox.Show("Rental failed.");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error renting movie: " + ex.Message);
+                MessageBox.Show("Error during rental: " + ex.Message);
             }
         }
 
-        private int selectedRentalRecordId = -1;
-
-        // saves rental record id when a row is clicked
-        private void gridRentals_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.RowIndex >= 0)
-            {
-                DataGridViewRow row = gridRentals.Rows[e.RowIndex];
-
-                selectedRentalRecordId = Convert.ToInt32(row.Cells["RentalRecordID"].Value);
-            }
-        }
-
+        // ==========================
+        // RETURN BUTTON
+        // ==========================
         private void btnReturn_Click(object sender, EventArgs e)
         {
             if (selectedRentalRecordId == -1)
             {
-                MessageBox.Show("Please select a rental to return.");
+                MessageBox.Show("Please select a rental in the history grid first.");
                 return;
             }
 
             try
             {
-                string sql = @"
-            UPDATE RentalRecord
-            SET ReturnTime = GETDATE()
-            WHERE RentalRecordID = @RentalID
-              AND ReturnTime IS NULL;  -- prevents double returns
-        ";
+                // Get movie ID of this rental
+                string getMovieSql = "SELECT MovieID, ReturnTime FROM RentalRecord WHERE RentalRecordID = @rid";
+                DataTable dt = DatabaseHelper.ExecuteSelect(getMovieSql, new SqlParameter("@rid", selectedRentalRecordId));
 
-                var param = new SqlParameter("@RentalID", selectedRentalRecordId);
+                if (dt.Rows.Count == 0)
+                {
+                    MessageBox.Show("Rental record not found.");
+                    return;
+                }
 
-                int rows = DatabaseHelper.ExecuteNonQuery(sql, param);
+                int movieId = Convert.ToInt32(dt.Rows[0]["MovieID"]);
+                bool alreadyReturned = dt.Rows[0]["ReturnTime"] != DBNull.Value;
+
+                if (alreadyReturned)
+                {
+                    MessageBox.Show("This movie has already been returned.");
+                    return;
+                }
+
+                // Update return time
+                string returnSql = @"
+                    UPDATE RentalRecord
+                    SET ReturnTime = GETDATE()
+                    WHERE RentalRecordID = @rid;";
+
+                int rows = DatabaseHelper.ExecuteNonQuery(returnSql, new SqlParameter("@rid", selectedRentalRecordId));
 
                 if (rows > 0)
                 {
-                    MessageBox.Show("Movie returned!");
+                    // Increase stock
+                    string incStockSql = "UPDATE Movie SET NumOfCopy = NumOfCopy + 1 WHERE MovieID = @mid";
+                    DatabaseHelper.ExecuteNonQuery(incStockSql, new SqlParameter("@mid", movieId));
 
-                    // Refresh rentals for the selected customer
-                    if (cmbCustomer.SelectedIndex >= 0)
-                    {
-                        int customerId = Convert.ToInt32(cmbCustomer.SelectedValue);
-                        LoadRentalsForCustomer(customerId);
-                    }
-
-                    selectedRentalRecordId = -1; // reset selection
+                    MessageBox.Show("Movie returned successfully!");
+                    LoadRentalHistory(selectedCustomerId);
+                    SearchMovies(); // refresh stock count in grid
                 }
                 else
                 {
-                    MessageBox.Show("Unable to return this rental. It may already be returned.");
+                    MessageBox.Show("Unable to update return record.");
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error returning movie: " + ex.Message);
             }
+        }
+
+        private void btnCustomerSearch_Click(object sender, EventArgs e)
+        {
+            SearchCustomers();
+        }
+
+        private void btnMovieSearch_Click(object sender, EventArgs e)
+        {
+            SearchMovies();
         }
     }
 }

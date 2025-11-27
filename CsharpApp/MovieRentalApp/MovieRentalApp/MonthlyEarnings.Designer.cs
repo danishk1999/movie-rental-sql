@@ -34,8 +34,6 @@ namespace MovieRentalApp
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.labelMonth = new System.Windows.Forms.Label();
-            this.comboBoxMonth = new System.Windows.Forms.ComboBox();
             this.labelYear = new System.Windows.Forms.Label();
             this.comboBoxYear = new System.Windows.Forms.ComboBox();
             this.bindingSource1 = new System.Windows.Forms.BindingSource(this.components);
@@ -44,37 +42,6 @@ namespace MovieRentalApp
             ((System.ComponentModel.ISupportInitialize)(this.bindingSource1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
-            // 
-            // labelMonth
-            // 
-            this.labelMonth.AutoSize = true;
-            this.labelMonth.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelMonth.Location = new System.Drawing.Point(90, 39);
-            this.labelMonth.Name = "labelMonth";
-            this.labelMonth.Size = new System.Drawing.Size(78, 25);
-            this.labelMonth.TabIndex = 0;
-            this.labelMonth.Text = "Month :";
-            // 
-            // comboBoxMonth
-            // 
-            this.comboBoxMonth.FormattingEnabled = true;
-            this.comboBoxMonth.Items.AddRange(new object[] {
-            "January",
-            "February",
-            "March",
-            "April",
-            "May",
-            "June",
-            "July",
-            "August",
-            "September",
-            "October",
-            "November",
-            "December"});
-            this.comboBoxMonth.Location = new System.Drawing.Point(174, 39);
-            this.comboBoxMonth.Name = "comboBoxMonth";
-            this.comboBoxMonth.Size = new System.Drawing.Size(229, 24);
-            this.comboBoxMonth.TabIndex = 1;
             // 
             // labelYear
             // 
@@ -124,8 +91,6 @@ namespace MovieRentalApp
             this.Controls.Add(this.buttonGo);
             this.Controls.Add(this.comboBoxYear);
             this.Controls.Add(this.labelYear);
-            this.Controls.Add(this.comboBoxMonth);
-            this.Controls.Add(this.labelMonth);
             this.Name = "MonthlyEarnings";
             this.Text = "MonthlyEarnings";
             ((System.ComponentModel.ISupportInitialize)(this.bindingSource1)).EndInit();
@@ -136,9 +101,6 @@ namespace MovieRentalApp
         }
 
         #endregion
-
-        private System.Windows.Forms.Label labelMonth;
-        private System.Windows.Forms.ComboBox comboBoxMonth;
         private System.Windows.Forms.Label labelYear;
         private System.Windows.Forms.ComboBox comboBoxYear;
         private System.Windows.Forms.BindingSource bindingSource1;
