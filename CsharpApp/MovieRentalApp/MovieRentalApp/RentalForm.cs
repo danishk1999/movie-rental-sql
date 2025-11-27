@@ -18,18 +18,18 @@ namespace MovieRentalApp
             InitializeComponent();
 
             try { ClearCustomerDetails(); } catch { }
-            // IMPORTANT: do NOT auto-load customers/movies here
-            // We want empty grids until user searches.
+
+            // IMPORTANT: we do NOT auto-load customers/movies.
+            // Grids start empty until user searches.
         }
 
         private void ClearCustomerDetails()
         {
-            // If you later add labels like lblCustName, etc., reset them here.
-            // For now this is just a safe placeholder.
+            // placeholder for future labels if needed
         }
 
         // ==========================
-        // FORM LOAD – start with empty grids
+        // FORM LOAD – start with empty grids + disabled rating
         // ==========================
         private void RentalForm_Load(object sender, EventArgs e)
         {
@@ -40,6 +40,14 @@ namespace MovieRentalApp
             selectedCustomerId = -1;
             selectedMovieId = -1;
             selectedRentalRecordId = -1;
+
+            // rating UI disabled until a return happens
+            try
+            {
+                numRating.Enabled = false;
+                btnSaveRating.Enabled = false;
+            }
+            catch { }
         }
 
         // ==========================
@@ -96,10 +104,9 @@ namespace MovieRentalApp
             SearchCustomers();
         }
 
-        // we don’t use live search anymore
         private void txtCustomerSearch_TextChanged(object sender, EventArgs e)
         {
-            // leave empty – search happens on button click
+            // search happens only on button click
         }
 
         private void gridCustomerResults_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -111,6 +118,11 @@ namespace MovieRentalApp
 
             selectedCustomerId = Convert.ToInt32(row.Cells["CustomerID"].Value);
             LoadRentalHistory(selectedCustomerId);
+
+            // When selecting a different customer, disable rating until a return is done
+            numRating.Enabled = false;
+            btnSaveRating.Enabled = false;
+            selectedRentalRecordId = -1;
         }
 
         private void gridCustomerResults_CellContentClick(object sender, DataGridViewCellEventArgs e)
@@ -119,7 +131,7 @@ namespace MovieRentalApp
         }
 
         // ==========================
-        // MOVIE SEARCH + SELECT
+        // MOVIE SEARCH + SELECT (with average rating)
         // ==========================
         private void SearchMovies()
         {
@@ -135,14 +147,24 @@ namespace MovieRentalApp
 
             string sql = @"
                 SELECT 
-                    MovieID,
-                    MovieName,
-                    MovieType,
-                    Fee,
-                    NumOfCopy
-                FROM Movie
-                WHERE MovieName LIKE @like
-                ORDER BY MovieName;";
+                    m.MovieID,
+                    m.MovieName,
+                    m.MovieType,
+                    m.Fee,
+                    m.NumOfCopy,
+                    AVG(CAST(rr.MovieRate AS float)) AS AvgRating
+                FROM Movie m
+                LEFT JOIN RentalRecord rr
+                    ON rr.MovieID = m.MovieID
+                    AND rr.MovieRate IS NOT NULL
+                WHERE m.MovieName LIKE @like
+                GROUP BY 
+                    m.MovieID,
+                    m.MovieName,
+                    m.MovieType,
+                    m.Fee,
+                    m.NumOfCopy
+                ORDER BY m.MovieName;";
 
             DataTable dt = DatabaseHelper.ExecuteSelect(
                 sql,
@@ -152,6 +174,9 @@ namespace MovieRentalApp
 
             if (gridMovieResults.Columns.Contains("MovieID"))
                 gridMovieResults.Columns["MovieID"].Visible = false;
+
+            if (gridMovieResults.Columns.Contains("AvgRating"))
+                gridMovieResults.Columns["AvgRating"].HeaderText = "Avg Rating";
 
             selectedMovieId = -1;
         }
@@ -163,7 +188,7 @@ namespace MovieRentalApp
 
         private void txtMovieSearch_TextChanged(object sender, EventArgs e)
         {
-            // leave empty – search happens on button click
+            // search happens only on button click
         }
 
         private void gridMovieResults_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -175,9 +200,9 @@ namespace MovieRentalApp
             selectedMovieId = Convert.ToInt32(row.Cells["MovieID"].Value);
         }
 
-        
+        // ==========================
         // RENTAL HISTORY
-        
+        // ==========================
         private void LoadRentalHistory(int customerId)
         {
             string sql = @"
@@ -202,13 +227,16 @@ namespace MovieRentalApp
             if (gridRentalHistory.Columns.Contains("RentalRecordID"))
                 gridRentalHistory.Columns["RentalRecordID"].Visible = false;
 
+            selectedRentalRecordId = -1;
+
             if (dt.Rows.Count == 0)
             {
-                // Optional: only show this the first time, but for now:
                 MessageBox.Show("No rentals found for this customer.");
             }
 
-            selectedRentalRecordId = -1;
+            // When history reloads, disable rating until a return is done
+            numRating.Enabled = false;
+            btnSaveRating.Enabled = false;
         }
 
         private void gridRentalHistory_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -218,11 +246,34 @@ namespace MovieRentalApp
 
             DataGridViewRow row = gridRentalHistory.Rows[e.RowIndex];
             selectedRentalRecordId = Convert.ToInt32(row.Cells["RentalRecordID"].Value);
+
+            // We do NOT allow rating on click alone – rating should be triggered after return.
+            // But we can still show existing rating in the control (read-only feeling).
+            try
+            {
+                if (row.Cells["MovieRate"] != null && row.Cells["MovieRate"].Value != DBNull.Value)
+                {
+                    int currentRate = Convert.ToInt32(row.Cells["MovieRate"].Value);
+
+                    if (currentRate >= numRating.Minimum && currentRate <= numRating.Maximum)
+                        numRating.Value = currentRate;
+                    else
+                        numRating.Value = numRating.Minimum;
+                }
+                else
+                {
+                    numRating.Value = numRating.Minimum;
+                }
+            }
+            catch
+            {
+                numRating.Value = numRating.Minimum;
+            }
         }
 
-        
+        // ==========================
         // RENT BUTTON
-        
+        // ==========================
         private void btnRent_Click(object sender, EventArgs e)
         {
             if (selectedCustomerId == -1)
@@ -294,9 +345,9 @@ namespace MovieRentalApp
             }
         }
 
-        
+        // ==========================
         // RETURN BUTTON
-        
+        // ==========================
         private void btnReturn_Click(object sender, EventArgs e)
         {
             if (selectedCustomerId == -1)
@@ -357,6 +408,15 @@ namespace MovieRentalApp
                     // Refresh history and movie list
                     LoadRentalHistory(selectedCustomerId);
                     SearchMovies();
+
+                    // 🔥 NOW enable rating controls for this just-returned rental
+                    numRating.Enabled = true;
+                    btnSaveRating.Enabled = true;
+
+                    // Default rating to 3 (neutral)
+                    numRating.Value = 3;
+
+                    MessageBox.Show("Please rate the movie you just returned (1–5) and click 'Save Rating'.");
                 }
                 else
                 {
@@ -366,6 +426,62 @@ namespace MovieRentalApp
             catch (Exception ex)
             {
                 MessageBox.Show("Error returning movie: " + ex.Message);
+            }
+        }
+
+        // ==========================
+        // SAVE RATING – only meaningful after return
+        // ==========================
+        private void btnSaveRating_Click(object sender, EventArgs e)
+        {
+            if (selectedRentalRecordId == -1)
+            {
+                MessageBox.Show("Please select a rental in the history grid first.");
+                return;
+            }
+
+            int rating = (int)numRating.Value;
+
+            if (rating < 1 || rating > 5)
+            {
+                MessageBox.Show("Rating must be between 1 and 5.");
+                return;
+            }
+
+            try
+            {
+                string sql = @"
+                    UPDATE RentalRecord
+                    SET MovieRate = @rate
+                    WHERE RentalRecordID = @rid;";
+
+                int rows = DatabaseHelper.ExecuteNonQuery(
+                    sql,
+                    new SqlParameter("@rate", rating),
+                    new SqlParameter("@rid", selectedRentalRecordId));
+
+                if (rows > 0)
+                {
+                    MessageBox.Show("Rating saved!");
+
+                    if (selectedCustomerId != -1)
+                        LoadRentalHistory(selectedCustomerId);
+
+                    // Refresh movie grid to update AvgRating
+                    SearchMovies();
+
+                    // Optionally disable rating again until next return
+                    numRating.Enabled = false;
+                    btnSaveRating.Enabled = false;
+                }
+                else
+                {
+                    MessageBox.Show("Could not update rating (no rows affected).");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error saving rating: " + ex.Message);
             }
         }
     }
