@@ -11,27 +11,35 @@ namespace MovieRentalApp
         private int selectedMovieId = -1;
         private int selectedRentalRecordId = -1;
 
-        private int employeeId = 2004;
+        private int employeeId = 2004; // temp hard-coded employee
 
         public RentalForm()
         {
             InitializeComponent();
 
             try { ClearCustomerDetails(); } catch { }
-
-            SearchCustomers();
-            SearchMovies();
+            // IMPORTANT: do NOT auto-load customers/movies here
+            // We want empty grids until user searches.
         }
 
         private void ClearCustomerDetails()
         {
-            // placeholder if you later add labels
+            // If you later add labels like lblCustName, etc., reset them here.
+            // For now this is just a safe placeholder.
         }
 
+        // ==========================
+        // FORM LOAD – start with empty grids
+        // ==========================
         private void RentalForm_Load(object sender, EventArgs e)
         {
-            SearchCustomers();
-            SearchMovies();
+            gridCustomerResults.DataSource = null;
+            gridMovieResults.DataSource = null;
+            gridRentalHistory.DataSource = null;
+
+            selectedCustomerId = -1;
+            selectedMovieId = -1;
+            selectedRentalRecordId = -1;
         }
 
         // ==========================
@@ -41,45 +49,66 @@ namespace MovieRentalApp
         {
             string keyword = txtCustomerSearch.Text.Trim();
 
+            // If no keyword, show nothing
+            if (string.IsNullOrEmpty(keyword))
+            {
+                gridCustomerResults.DataSource = null;
+                selectedCustomerId = -1;
+                gridRentalHistory.DataSource = null;
+                return;
+            }
+
             string sql = @"
-        SELECT 
-            c.CustomerID,
-            c.FirstName + ' ' + c.LastName AS FullName,
-            c.Email,
-            c.CreationDate,
-            ISNULL(cp.PhoneNum, '') AS PhoneNum
-        FROM Customer c
-        LEFT JOIN CustomerPhone cp 
-            ON c.CustomerID = cp.CustomerID
-            AND cp.EndTime IS NULL             -- only current phone
-        WHERE (@key = '')
-           OR c.FirstName LIKE @like
-           OR c.LastName  LIKE @like
-           OR c.Email     LIKE @like
-        ORDER BY c.FirstName, c.LastName;";
+                SELECT 
+                    c.CustomerID,
+                    c.FirstName + ' ' + c.LastName AS FullName,
+                    c.Email,
+                    c.CreationDate,
+                    ISNULL(cp.PhoneNum, '') AS PhoneNum
+                FROM Customer c
+                LEFT JOIN CustomerPhone cp 
+                    ON c.CustomerID = cp.CustomerID
+                    AND cp.EndTime IS NULL      -- only current phone
+                WHERE c.FirstName LIKE @like
+                   OR c.LastName  LIKE @like
+                   OR c.Email     LIKE @like
+                ORDER BY c.FirstName, c.LastName;";
 
             DataTable dt = DatabaseHelper.ExecuteSelect(
                 sql,
-                new SqlParameter("@key", keyword),
                 new SqlParameter("@like", "%" + keyword + "%"));
 
             gridCustomerResults.DataSource = dt;
 
-            // Hide internal ID
+            // Hide internal ID, show phone nicely
             if (gridCustomerResults.Columns.Contains("CustomerID"))
                 gridCustomerResults.Columns["CustomerID"].Visible = false;
 
-            // Nice header for phone column
             if (gridCustomerResults.Columns.Contains("PhoneNum"))
                 gridCustomerResults.Columns["PhoneNum"].HeaderText = "Phone";
+
+            selectedCustomerId = -1;
+            gridRentalHistory.DataSource = null;
         }
 
+        private void btnCustomerSearch_Click(object sender, EventArgs e)
+        {
+            SearchCustomers();
+        }
+
+        // we don’t use live search anymore
+        private void txtCustomerSearch_TextChanged(object sender, EventArgs e)
+        {
+            // leave empty – search happens on button click
+        }
 
         private void gridCustomerResults_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex < 0) return;
+            if (e.RowIndex < 0 || gridCustomerResults.DataSource == null)
+                return;
 
             DataGridViewRow row = gridCustomerResults.Rows[e.RowIndex];
+
             selectedCustomerId = Convert.ToInt32(row.Cells["CustomerID"].Value);
             LoadRentalHistory(selectedCustomerId);
         }
@@ -89,14 +118,20 @@ namespace MovieRentalApp
             gridCustomerResults_CellClick(sender, e);
         }
 
-        private void txtCustomerSearch_TextChanged(object sender, EventArgs e) { }
-
         // ==========================
         // MOVIE SEARCH + SELECT
         // ==========================
         private void SearchMovies()
         {
             string keyword = txtMovieSearch.Text.Trim();
+
+            // If no keyword, keep movie grid empty
+            if (string.IsNullOrEmpty(keyword))
+            {
+                gridMovieResults.DataSource = null;
+                selectedMovieId = -1;
+                return;
+            }
 
             string sql = @"
                 SELECT 
@@ -106,46 +141,56 @@ namespace MovieRentalApp
                     Fee,
                     NumOfCopy
                 FROM Movie
-                WHERE (@key = '')
-                   OR MovieName LIKE @like
+                WHERE MovieName LIKE @like
                 ORDER BY MovieName;";
 
             DataTable dt = DatabaseHelper.ExecuteSelect(
                 sql,
-                new SqlParameter("@key", keyword),
                 new SqlParameter("@like", "%" + keyword + "%"));
 
             gridMovieResults.DataSource = dt;
+
             if (gridMovieResults.Columns.Contains("MovieID"))
                 gridMovieResults.Columns["MovieID"].Visible = false;
+
+            selectedMovieId = -1;
+        }
+
+        private void btnMovieSearch_Click(object sender, EventArgs e)
+        {
+            SearchMovies();
+        }
+
+        private void txtMovieSearch_TextChanged(object sender, EventArgs e)
+        {
+            // leave empty – search happens on button click
         }
 
         private void gridMovieResults_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex < 0) return;
+            if (e.RowIndex < 0 || gridMovieResults.DataSource == null)
+                return;
 
             DataGridViewRow row = gridMovieResults.Rows[e.RowIndex];
             selectedMovieId = Convert.ToInt32(row.Cells["MovieID"].Value);
         }
 
-        private void txtMovieSearch_TextChanged(object sender, EventArgs e) { }
-
-        // ==========================
+        
         // RENTAL HISTORY
-        // ==========================
+        
         private void LoadRentalHistory(int customerId)
         {
             string sql = @"
-        SELECT 
-            rr.RentalRecordID,
-            m.MovieName,
-            rr.CheckoutTime,
-            rr.ReturnTime,
-            rr.MovieRate
-        FROM RentalRecord rr
-        INNER JOIN Movie m ON rr.MovieID = m.MovieID
-        WHERE rr.CustomerID = @cid
-        ORDER BY rr.CheckoutTime DESC;";
+                SELECT 
+                    rr.RentalRecordID,
+                    m.MovieName,
+                    rr.CheckoutTime,
+                    rr.ReturnTime,
+                    rr.MovieRate
+                FROM RentalRecord rr
+                INNER JOIN Movie m ON rr.MovieID = m.MovieID
+                WHERE rr.CustomerID = @cid
+                ORDER BY rr.CheckoutTime DESC;";
 
             DataTable dt = DatabaseHelper.ExecuteSelect(
                 sql,
@@ -153,26 +198,31 @@ namespace MovieRentalApp
 
             gridRentalHistory.DataSource = dt;
 
-            // 🔒 keep ID for logic, but hide it from the user
+            // hide internal id column but keep it available for Return
             if (gridRentalHistory.Columns.Contains("RentalRecordID"))
                 gridRentalHistory.Columns["RentalRecordID"].Visible = false;
 
             if (dt.Rows.Count == 0)
             {
+                // Optional: only show this the first time, but for now:
                 MessageBox.Show("No rentals found for this customer.");
             }
+
+            selectedRentalRecordId = -1;
         }
 
         private void gridRentalHistory_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex < 0) return;
+            if (e.RowIndex < 0 || gridRentalHistory.DataSource == null)
+                return;
+
             DataGridViewRow row = gridRentalHistory.Rows[e.RowIndex];
             selectedRentalRecordId = Convert.ToInt32(row.Cells["RentalRecordID"].Value);
         }
 
-        // ==========================
+        
         // RENT BUTTON
-        // ==========================
+        
         private void btnRent_Click(object sender, EventArgs e)
         {
             if (selectedCustomerId == -1)
@@ -189,9 +239,11 @@ namespace MovieRentalApp
 
             try
             {
-                // Check stock first
+                // 1) Check stock
                 string checkStockSql = "SELECT NumOfCopy FROM Movie WHERE MovieID = @mid";
-                DataTable stockDt = DatabaseHelper.ExecuteSelect(checkStockSql, new SqlParameter("@mid", selectedMovieId));
+                DataTable stockDt = DatabaseHelper.ExecuteSelect(
+                    checkStockSql,
+                    new SqlParameter("@mid", selectedMovieId));
 
                 if (stockDt.Rows.Count == 0)
                 {
@@ -206,7 +258,7 @@ namespace MovieRentalApp
                     return;
                 }
 
-                // Rent movie
+                // 2) Insert rental
                 string rentSql = @"
                     INSERT INTO RentalRecord (EmployeeID, CustomerID, MovieID, CheckoutTime, ReturnTime, MovieRate)
                     VALUES (@EmpID, @CustID, @MovieID, GETDATE(), NULL, NULL);";
@@ -219,13 +271,17 @@ namespace MovieRentalApp
 
                 if (rows > 0)
                 {
-                    // Decrease stock
+                    // 3) Decrement stock
                     string updateStockSql = "UPDATE Movie SET NumOfCopy = NumOfCopy - 1 WHERE MovieID = @mid";
-                    DatabaseHelper.ExecuteNonQuery(updateStockSql, new SqlParameter("@mid", selectedMovieId));
+                    DatabaseHelper.ExecuteNonQuery(
+                        updateStockSql,
+                        new SqlParameter("@mid", selectedMovieId));
 
                     MessageBox.Show("Movie rented successfully!");
+
+                    // Refresh history and movie list with current keyword
                     LoadRentalHistory(selectedCustomerId);
-                    SearchMovies(); // refresh stock count in grid
+                    SearchMovies();
                 }
                 else
                 {
@@ -238,11 +294,17 @@ namespace MovieRentalApp
             }
         }
 
-        // ==========================
+        
         // RETURN BUTTON
-        // ==========================
+        
         private void btnReturn_Click(object sender, EventArgs e)
         {
+            if (selectedCustomerId == -1)
+            {
+                MessageBox.Show("Please select a customer first.");
+                return;
+            }
+
             if (selectedRentalRecordId == -1)
             {
                 MessageBox.Show("Please select a rental in the history grid first.");
@@ -251,9 +313,11 @@ namespace MovieRentalApp
 
             try
             {
-                // Get movie ID of this rental
+                // 1) Get movie for this rental and check if already returned
                 string getMovieSql = "SELECT MovieID, ReturnTime FROM RentalRecord WHERE RentalRecordID = @rid";
-                DataTable dt = DatabaseHelper.ExecuteSelect(getMovieSql, new SqlParameter("@rid", selectedRentalRecordId));
+                DataTable dt = DatabaseHelper.ExecuteSelect(
+                    getMovieSql,
+                    new SqlParameter("@rid", selectedRentalRecordId));
 
                 if (dt.Rows.Count == 0)
                 {
@@ -270,23 +334,29 @@ namespace MovieRentalApp
                     return;
                 }
 
-                // Update return time
+                // 2) Update return time
                 string returnSql = @"
                     UPDATE RentalRecord
                     SET ReturnTime = GETDATE()
                     WHERE RentalRecordID = @rid;";
 
-                int rows = DatabaseHelper.ExecuteNonQuery(returnSql, new SqlParameter("@rid", selectedRentalRecordId));
+                int rows = DatabaseHelper.ExecuteNonQuery(
+                    returnSql,
+                    new SqlParameter("@rid", selectedRentalRecordId));
 
                 if (rows > 0)
                 {
-                    // Increase stock
+                    // 3) Increment stock
                     string incStockSql = "UPDATE Movie SET NumOfCopy = NumOfCopy + 1 WHERE MovieID = @mid";
-                    DatabaseHelper.ExecuteNonQuery(incStockSql, new SqlParameter("@mid", movieId));
+                    DatabaseHelper.ExecuteNonQuery(
+                        incStockSql,
+                        new SqlParameter("@mid", movieId));
 
                     MessageBox.Show("Movie returned successfully!");
+
+                    // Refresh history and movie list
                     LoadRentalHistory(selectedCustomerId);
-                    SearchMovies(); // refresh stock count in grid
+                    SearchMovies();
                 }
                 else
                 {
@@ -297,16 +367,6 @@ namespace MovieRentalApp
             {
                 MessageBox.Show("Error returning movie: " + ex.Message);
             }
-        }
-
-        private void btnCustomerSearch_Click(object sender, EventArgs e)
-        {
-            SearchCustomers();
-        }
-
-        private void btnMovieSearch_Click(object sender, EventArgs e)
-        {
-            SearchMovies();
         }
     }
 }
