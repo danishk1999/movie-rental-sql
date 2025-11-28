@@ -32,6 +32,13 @@ namespace MovieRentalApp
             this.Show();
         }
 
+        private void movieRanks_Click(object sender, EventArgs e)
+        {
+            
+            MovieRanks rankingsForm = new MovieRanks();
+            rankingsForm.ShowDialog();
+            
 
+        }
     }
 }

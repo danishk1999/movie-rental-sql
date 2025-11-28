@@ -28,35 +28,84 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.dataGridView1 = new System.Windows.Forms.DataGridView();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
+            this.movieRankGridView = new System.Windows.Forms.DataGridView();
+            this.monthComboBox = new System.Windows.Forms.ComboBox();
+            this.yearComboBox = new System.Windows.Forms.ComboBox();
+            this.monthRank = new System.Windows.Forms.Label();
+            this.yearRank = new System.Windows.Forms.Label();
+            ((System.ComponentModel.ISupportInitialize)(this.movieRankGridView)).BeginInit();
             this.SuspendLayout();
             // 
-            // dataGridView1
+            // movieRankGridView
             // 
-            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Location = new System.Drawing.Point(98, 71);
-            this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.RowHeadersWidth = 51;
-            this.dataGridView1.RowTemplate.Height = 24;
-            this.dataGridView1.Size = new System.Drawing.Size(270, 286);
-            this.dataGridView1.TabIndex = 0;
+            this.movieRankGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.movieRankGridView.Location = new System.Drawing.Point(98, 71);
+            this.movieRankGridView.Name = "dataGridView1";
+            this.movieRankGridView.RowHeadersWidth = 51;
+            this.movieRankGridView.RowTemplate.Height = 24;
+            this.movieRankGridView.Size = new System.Drawing.Size(270, 286);
+            this.movieRankGridView.TabIndex = 0;
+            // 
+            // monthcomboBox1
+            // 
+            this.monthComboBox.FormattingEnabled = true;
+            this.monthComboBox.Location = new System.Drawing.Point(109, 23);
+            this.monthComboBox.Name = "comboBox1";
+            this.monthComboBox.Size = new System.Drawing.Size(108, 24);
+            this.monthComboBox.TabIndex = 1;
+            // 
+            // yearcomboBox2
+            // 
+            this.yearComboBox.FormattingEnabled = true;
+            this.yearComboBox.Location = new System.Drawing.Point(303, 23);
+            this.yearComboBox.Name = "comboBox2";
+            this.yearComboBox.Size = new System.Drawing.Size(121, 24);
+            this.yearComboBox.TabIndex = 2;
+            // 
+            // monthRank
+            // 
+            this.monthRank.AutoSize = true;
+            this.monthRank.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.monthRank.Location = new System.Drawing.Point(20, 22);
+            this.monthRank.Name = "monthRank";
+            this.monthRank.Size = new System.Drawing.Size(83, 25);
+            this.monthRank.TabIndex = 3;
+            this.monthRank.Text = "Month : ";
+            // 
+            // yearRank
+            // 
+            this.yearRank.AutoSize = true;
+            this.yearRank.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.yearRank.Location = new System.Drawing.Point(233, 22);
+            this.yearRank.Name = "yearRank";
+            this.yearRank.Size = new System.Drawing.Size(64, 25);
+            this.yearRank.TabIndex = 4;
+            this.yearRank.Text = "Year :";
             // 
             // MovieRanks
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(473, 427);
-            this.Controls.Add(this.dataGridView1);
+            this.Controls.Add(this.yearRank);
+            this.Controls.Add(this.monthRank);
+            this.Controls.Add(this.yearComboBox);
+            this.Controls.Add(this.monthComboBox);
+            this.Controls.Add(this.movieRankGridView);
             this.Name = "MovieRanks";
             this.Text = "MovieRanks";
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.movieRankGridView)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
         #endregion
 
-        private System.Windows.Forms.DataGridView dataGridView1;
+        private System.Windows.Forms.DataGridView movieRankGridView;
+        private System.Windows.Forms.ComboBox monthComboBox;
+        private System.Windows.Forms.ComboBox yearComboBox;
+        private System.Windows.Forms.Label monthRank;
+        private System.Windows.Forms.Label yearRank;
     }
 }
