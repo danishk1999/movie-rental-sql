@@ -1,6 +1,6 @@
 ﻿namespace MovieRentalApp
 {
-    partial class RentalForm
+    partial class rentalform
     {
         /// <summary>
         /// Required designer variable.
@@ -44,10 +44,18 @@
             this.lblRate = new System.Windows.Forms.Label();
             this.numRating = new System.Windows.Forms.NumericUpDown();
             this.btnSaveRating = new System.Windows.Forms.Button();
+            this.lblActorRatings = new System.Windows.Forms.Label();
+            this.btnSaveActorRatings = new System.Windows.Forms.Button();
+            this.dgvActorRatings = new System.Windows.Forms.DataGridView();
+            this.colActorID = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colActorName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colActorAvgRate = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colActorRating = new System.Windows.Forms.DataGridViewComboBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.gridCustomerResults)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gridMovieResults)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gridRentalHistory)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numRating)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvActorRatings)).BeginInit();
             this.SuspendLayout();
             // 
             // label1
@@ -119,7 +127,7 @@
             this.gridMovieResults.Name = "gridMovieResults";
             this.gridMovieResults.ReadOnly = true;
             this.gridMovieResults.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.gridMovieResults.Size = new System.Drawing.Size(459, 188);
+            this.gridMovieResults.Size = new System.Drawing.Size(479, 188);
             this.gridMovieResults.TabIndex = 6;
             this.gridMovieResults.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.gridMovieResults_CellClick);
             // 
@@ -148,7 +156,7 @@
             // 
             // btnRent
             // 
-            this.btnRent.Location = new System.Drawing.Point(677, 469);
+            this.btnRent.Location = new System.Drawing.Point(604, 463);
             this.btnRent.Name = "btnRent";
             this.btnRent.Size = new System.Drawing.Size(75, 23);
             this.btnRent.TabIndex = 9;
@@ -158,7 +166,7 @@
             // 
             // btnReturn
             // 
-            this.btnReturn.Location = new System.Drawing.Point(677, 525);
+            this.btnReturn.Location = new System.Drawing.Point(604, 519);
             this.btnReturn.Name = "btnReturn";
             this.btnReturn.Size = new System.Drawing.Size(75, 23);
             this.btnReturn.TabIndex = 10;
@@ -190,7 +198,7 @@
             // 
             this.lblRate.AutoSize = true;
             this.lblRate.Font = new System.Drawing.Font("Times New Roman", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblRate.Location = new System.Drawing.Point(793, 500);
+            this.lblRate.Location = new System.Drawing.Point(875, 519);
             this.lblRate.Name = "lblRate";
             this.lblRate.Size = new System.Drawing.Size(119, 15);
             this.lblRate.TabIndex = 13;
@@ -199,7 +207,7 @@
             // numRating
             // 
             this.numRating.Enabled = false;
-            this.numRating.Location = new System.Drawing.Point(918, 500);
+            this.numRating.Location = new System.Drawing.Point(907, 540);
             this.numRating.Maximum = new decimal(new int[] {
             5,
             0,
@@ -222,19 +230,86 @@
             // btnSaveRating
             // 
             this.btnSaveRating.Enabled = false;
-            this.btnSaveRating.Location = new System.Drawing.Point(958, 493);
+            this.btnSaveRating.Location = new System.Drawing.Point(868, 577);
             this.btnSaveRating.Name = "btnSaveRating";
-            this.btnSaveRating.Size = new System.Drawing.Size(82, 31);
+            this.btnSaveRating.Size = new System.Drawing.Size(116, 31);
             this.btnSaveRating.TabIndex = 15;
-            this.btnSaveRating.Text = "Save Rating";
+            this.btnSaveRating.Text = "Save Movie Rating";
             this.btnSaveRating.UseVisualStyleBackColor = true;
             this.btnSaveRating.Click += new System.EventHandler(this.btnSaveRating_Click);
             // 
-            // RentalForm
+            // lblActorRatings
+            // 
+            this.lblActorRatings.AutoSize = true;
+            this.lblActorRatings.Font = new System.Drawing.Font("Times New Roman", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblActorRatings.Location = new System.Drawing.Point(777, 399);
+            this.lblActorRatings.Name = "lblActorRatings";
+            this.lblActorRatings.Size = new System.Drawing.Size(176, 15);
+            this.lblActorRatings.TabIndex = 16;
+            this.lblActorRatings.Text = "Rate Actors for this Movie (1-5)";
+            this.lblActorRatings.Click += new System.EventHandler(this.lblActorRatings_Click);
+            // 
+            // btnSaveActorRatings
+            // 
+            this.btnSaveActorRatings.Location = new System.Drawing.Point(977, 395);
+            this.btnSaveActorRatings.Name = "btnSaveActorRatings";
+            this.btnSaveActorRatings.Size = new System.Drawing.Size(112, 23);
+            this.btnSaveActorRatings.TabIndex = 18;
+            this.btnSaveActorRatings.Text = "Save Actor Ratings";
+            this.btnSaveActorRatings.UseVisualStyleBackColor = true;
+            this.btnSaveActorRatings.Click += new System.EventHandler(this.btnSaveActorRatings_Click);
+            // 
+            // dgvActorRatings
+            // 
+            this.dgvActorRatings.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvActorRatings.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.colActorID,
+            this.colActorName,
+            this.colActorAvgRate,
+            this.colActorRating});
+            this.dgvActorRatings.Location = new System.Drawing.Point(739, 424);
+            this.dgvActorRatings.Name = "dgvActorRatings";
+            this.dgvActorRatings.Size = new System.Drawing.Size(350, 75);
+            this.dgvActorRatings.TabIndex = 19;
+            // 
+            // colActorID
+            // 
+            this.colActorID.HeaderText = "Actor ID";
+            this.colActorID.Name = "colActorID";
+            this.colActorID.ReadOnly = true;
+            this.colActorID.Visible = false;
+            // 
+            // colActorName
+            // 
+            this.colActorName.HeaderText = "Actor";
+            this.colActorName.Name = "colActorName";
+            this.colActorName.ReadOnly = true;
+            // 
+            // colActorAvgRate
+            // 
+            this.colActorAvgRate.HeaderText = "Avg Rating";
+            this.colActorAvgRate.Name = "colActorAvgRate";
+            this.colActorAvgRate.ReadOnly = true;
+            // 
+            // colActorRating
+            // 
+            this.colActorRating.HeaderText = "Your Rating";
+            this.colActorRating.Items.AddRange(new object[] {
+            "1",
+            "2",
+            "3",
+            "4",
+            "5"});
+            this.colActorRating.Name = "colActorRating";
+            // 
+            // rentalform
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1207, 637);
+            this.Controls.Add(this.dgvActorRatings);
+            this.Controls.Add(this.btnSaveActorRatings);
+            this.Controls.Add(this.lblActorRatings);
             this.Controls.Add(this.btnSaveRating);
             this.Controls.Add(this.numRating);
             this.Controls.Add(this.lblRate);
@@ -251,13 +326,14 @@
             this.Controls.Add(this.txtCustomerSearch);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
-            this.Name = "RentalForm";
+            this.Name = "rentalform";
             this.Text = "RentalForm";
             this.Load += new System.EventHandler(this.RentalForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.gridCustomerResults)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.gridMovieResults)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.gridRentalHistory)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numRating)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvActorRatings)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -281,5 +357,12 @@
         private System.Windows.Forms.Label lblRate;
         private System.Windows.Forms.NumericUpDown numRating;
         private System.Windows.Forms.Button btnSaveRating;
+        private System.Windows.Forms.Label lblActorRatings;
+        private System.Windows.Forms.Button btnSaveActorRatings;
+        private System.Windows.Forms.DataGridView dgvActorRatings;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colActorID;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colActorName;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colActorAvgRate;
+        private System.Windows.Forms.DataGridViewComboBoxColumn colActorRating;
     }
 }

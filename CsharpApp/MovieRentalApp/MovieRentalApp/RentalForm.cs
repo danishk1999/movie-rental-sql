@@ -5,7 +5,7 @@ using System.Windows.Forms;
 
 namespace MovieRentalApp
 {
-    public partial class RentalForm : Form
+    public partial class rentalform : Form
     {
         private int selectedCustomerId = -1;
         private int selectedMovieId = -1;
@@ -13,14 +13,11 @@ namespace MovieRentalApp
 
         private int employeeId = 2004; // temp hard-coded employee
 
-        public RentalForm()
+        public rentalform()
         {
             InitializeComponent();
 
             try { ClearCustomerDetails(); } catch { }
-
-            // IMPORTANT: we do NOT auto-load customers/movies.
-            // Grids start empty until user searches.
         }
 
         private void ClearCustomerDetails()
@@ -41,11 +38,20 @@ namespace MovieRentalApp
             selectedMovieId = -1;
             selectedRentalRecordId = -1;
 
-            // rating UI disabled until a return happens
+            // movie rating
             try
             {
                 numRating.Enabled = false;
                 btnSaveRating.Enabled = false;
+            }
+            catch { }
+
+            // actor rating
+            try
+            {
+                dgvActorRatings.Rows.Clear();
+                dgvActorRatings.Enabled = false;
+                btnSaveActorRatings.Enabled = false;
             }
             catch { }
         }
@@ -57,7 +63,6 @@ namespace MovieRentalApp
         {
             string keyword = txtCustomerSearch.Text.Trim();
 
-            // If no keyword, show nothing
             if (string.IsNullOrEmpty(keyword))
             {
                 gridCustomerResults.DataSource = null;
@@ -76,7 +81,7 @@ namespace MovieRentalApp
                 FROM Customer c
                 LEFT JOIN CustomerPhone cp 
                     ON c.CustomerID = cp.CustomerID
-                    AND cp.EndTime IS NULL      -- only current phone
+                    AND cp.EndTime IS NULL
                 WHERE c.FirstName LIKE @like
                    OR c.LastName  LIKE @like
                    OR c.Email     LIKE @like
@@ -88,7 +93,6 @@ namespace MovieRentalApp
 
             gridCustomerResults.DataSource = dt;
 
-            // Hide internal ID, show phone nicely
             if (gridCustomerResults.Columns.Contains("CustomerID"))
                 gridCustomerResults.Columns["CustomerID"].Visible = false;
 
@@ -97,6 +101,15 @@ namespace MovieRentalApp
 
             selectedCustomerId = -1;
             gridRentalHistory.DataSource = null;
+
+            // clear actor rating area
+            try
+            {
+                dgvActorRatings.Rows.Clear();
+                dgvActorRatings.Enabled = false;
+                btnSaveActorRatings.Enabled = false;
+            }
+            catch { }
         }
 
         private void btnCustomerSearch_Click(object sender, EventArgs e)
@@ -106,7 +119,6 @@ namespace MovieRentalApp
 
         private void txtCustomerSearch_TextChanged(object sender, EventArgs e)
         {
-            // search happens only on button click
         }
 
         private void gridCustomerResults_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -119,10 +131,17 @@ namespace MovieRentalApp
             selectedCustomerId = Convert.ToInt32(row.Cells["CustomerID"].Value);
             LoadRentalHistory(selectedCustomerId);
 
-            // When selecting a different customer, disable rating until a return is done
             numRating.Enabled = false;
             btnSaveRating.Enabled = false;
             selectedRentalRecordId = -1;
+
+            try
+            {
+                dgvActorRatings.Rows.Clear();
+                dgvActorRatings.Enabled = false;
+                btnSaveActorRatings.Enabled = false;
+            }
+            catch { }
         }
 
         private void gridCustomerResults_CellContentClick(object sender, DataGridViewCellEventArgs e)
@@ -137,7 +156,6 @@ namespace MovieRentalApp
         {
             string keyword = txtMovieSearch.Text.Trim();
 
-            // If no keyword, keep movie grid empty
             if (string.IsNullOrEmpty(keyword))
             {
                 gridMovieResults.DataSource = null;
@@ -188,7 +206,6 @@ namespace MovieRentalApp
 
         private void txtMovieSearch_TextChanged(object sender, EventArgs e)
         {
-            // search happens only on button click
         }
 
         private void gridMovieResults_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -223,7 +240,6 @@ namespace MovieRentalApp
 
             gridRentalHistory.DataSource = dt;
 
-            // hide internal id column but keep it available for Return
             if (gridRentalHistory.Columns.Contains("RentalRecordID"))
                 gridRentalHistory.Columns["RentalRecordID"].Visible = false;
 
@@ -234,9 +250,16 @@ namespace MovieRentalApp
                 MessageBox.Show("No rentals found for this customer.");
             }
 
-            // When history reloads, disable rating until a return is done
             numRating.Enabled = false;
             btnSaveRating.Enabled = false;
+
+            try
+            {
+                dgvActorRatings.Rows.Clear();
+                dgvActorRatings.Enabled = false;
+                btnSaveActorRatings.Enabled = false;
+            }
+            catch { }
         }
 
         private void gridRentalHistory_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -247,8 +270,6 @@ namespace MovieRentalApp
             DataGridViewRow row = gridRentalHistory.Rows[e.RowIndex];
             selectedRentalRecordId = Convert.ToInt32(row.Cells["RentalRecordID"].Value);
 
-            // We do NOT allow rating on click alone – rating should be triggered after return.
-            // But we can still show existing rating in the control (read-only feeling).
             try
             {
                 if (row.Cells["MovieRate"] != null && row.Cells["MovieRate"].Value != DBNull.Value)
@@ -290,7 +311,6 @@ namespace MovieRentalApp
 
             try
             {
-                // 1) Check stock
                 string checkStockSql = "SELECT NumOfCopy FROM Movie WHERE MovieID = @mid";
                 DataTable stockDt = DatabaseHelper.ExecuteSelect(
                     checkStockSql,
@@ -309,7 +329,6 @@ namespace MovieRentalApp
                     return;
                 }
 
-                // 2) Insert rental
                 string rentSql = @"
                     INSERT INTO RentalRecord (EmployeeID, CustomerID, MovieID, CheckoutTime, ReturnTime, MovieRate)
                     VALUES (@EmpID, @CustID, @MovieID, GETDATE(), NULL, NULL);";
@@ -322,7 +341,6 @@ namespace MovieRentalApp
 
                 if (rows > 0)
                 {
-                    // 3) Decrement stock
                     string updateStockSql = "UPDATE Movie SET NumOfCopy = NumOfCopy - 1 WHERE MovieID = @mid";
                     DatabaseHelper.ExecuteNonQuery(
                         updateStockSql,
@@ -330,7 +348,6 @@ namespace MovieRentalApp
 
                     MessageBox.Show("Movie rented successfully!");
 
-                    // Refresh history and movie list with current keyword
                     LoadRentalHistory(selectedCustomerId);
                     SearchMovies();
                 }
@@ -364,11 +381,12 @@ namespace MovieRentalApp
 
             try
             {
-                // 1) Get movie for this rental and check if already returned
+                int rentalId = selectedRentalRecordId;
+
                 string getMovieSql = "SELECT MovieID, ReturnTime FROM RentalRecord WHERE RentalRecordID = @rid";
                 DataTable dt = DatabaseHelper.ExecuteSelect(
                     getMovieSql,
-                    new SqlParameter("@rid", selectedRentalRecordId));
+                    new SqlParameter("@rid", rentalId));
 
                 if (dt.Rows.Count == 0)
                 {
@@ -385,7 +403,6 @@ namespace MovieRentalApp
                     return;
                 }
 
-                // 2) Update return time
                 string returnSql = @"
                     UPDATE RentalRecord
                     SET ReturnTime = GETDATE()
@@ -393,11 +410,10 @@ namespace MovieRentalApp
 
                 int rows = DatabaseHelper.ExecuteNonQuery(
                     returnSql,
-                    new SqlParameter("@rid", selectedRentalRecordId));
+                    new SqlParameter("@rid", rentalId));
 
                 if (rows > 0)
                 {
-                    // 3) Increment stock
                     string incStockSql = "UPDATE Movie SET NumOfCopy = NumOfCopy + 1 WHERE MovieID = @mid";
                     DatabaseHelper.ExecuteNonQuery(
                         incStockSql,
@@ -405,18 +421,23 @@ namespace MovieRentalApp
 
                     MessageBox.Show("Movie returned successfully!");
 
-                    // Refresh history and movie list
                     LoadRentalHistory(selectedCustomerId);
+
+                    // restore rental id for rating
+                    selectedRentalRecordId = rentalId;
+                    selectedMovieId = movieId;
+
                     SearchMovies();
 
-                    // 🔥 NOW enable rating controls for this just-returned rental
+                    // enable movie rating
                     numRating.Enabled = true;
                     btnSaveRating.Enabled = true;
-
-                    // Default rating to 3 (neutral)
                     numRating.Value = 3;
 
-                    MessageBox.Show("Please rate the movie you just returned (1–5) and click 'Save Rating'.");
+                    // load actors for this movie
+                    LoadActorsForMovie(movieId, rentalId);
+
+                    MessageBox.Show("Please rate the movie and/or the actors, then click Save.");
                 }
                 else
                 {
@@ -430,7 +451,7 @@ namespace MovieRentalApp
         }
 
         // ==========================
-        // SAVE RATING – only meaningful after return
+        // MOVIE RATING SAVE
         // ==========================
         private void btnSaveRating_Click(object sender, EventArgs e)
         {
@@ -462,15 +483,13 @@ namespace MovieRentalApp
 
                 if (rows > 0)
                 {
-                    MessageBox.Show("Rating saved!");
+                    MessageBox.Show("Movie rating saved!");
 
                     if (selectedCustomerId != -1)
                         LoadRentalHistory(selectedCustomerId);
 
-                    // Refresh movie grid to update AvgRating
                     SearchMovies();
 
-                    // Optionally disable rating again until next return
                     numRating.Enabled = false;
                     btnSaveRating.Enabled = false;
                 }
@@ -483,6 +502,155 @@ namespace MovieRentalApp
             {
                 MessageBox.Show("Error saving rating: " + ex.Message);
             }
+        }
+
+        // ==========================
+        // ACTOR LOADING + RATING
+        // ==========================
+        private void LoadActorsForMovie(int movieId, int rentalRecordId)
+        {
+            try
+            {
+                dgvActorRatings.Rows.Clear();
+            }
+            catch { }
+
+            string sql = @"
+        SELECT 
+            a.ActorID,
+            a.Name AS ActorName,
+            ar.ActorRate,  -- this customer's rating for this rental (may be NULL)
+            (
+                SELECT AVG(CAST(ar2.ActorRate AS float))
+                FROM dbo.ActorRate ar2
+                JOIN dbo.RentalRecord rr2 
+                    ON rr2.RentalRecordID = ar2.RentalRecordID
+                WHERE rr2.MovieID = @mid
+                  AND ar2.ActorID = a.ActorID
+            ) AS AvgActorRate
+        FROM dbo.Actor a
+        INNER JOIN dbo.ActorAppear aa
+            ON a.ActorID = aa.ActorID
+        LEFT JOIN dbo.ActorRate ar
+            ON ar.ActorID = a.ActorID
+           AND ar.RentalRecordID = @rid
+        WHERE aa.MovieID = @mid;";
+
+            DataTable dt = DatabaseHelper.ExecuteSelect(
+                sql,
+                new SqlParameter("@mid", movieId),
+                new SqlParameter("@rid", rentalRecordId));
+
+            if (dt.Rows.Count == 0)
+            {
+                dgvActorRatings.Enabled = false;
+                btnSaveActorRatings.Enabled = false;
+                return;
+            }
+
+            foreach (DataRow dr in dt.Rows)
+            {
+                int rowIndex = dgvActorRatings.Rows.Add();
+                DataGridViewRow row = dgvActorRatings.Rows[rowIndex];
+
+                row.Cells["colActorID"].Value = dr["ActorID"];
+                row.Cells["colActorName"].Value = dr["ActorName"];
+
+                // your rating for THIS rental (if it exists in ActorRate)
+                if (dr["ActorRate"] != DBNull.Value)
+                {
+                    row.Cells["colActorRating"].Value = Convert.ToInt32(dr["ActorRate"]);
+                }
+
+                // average rating for this actor in this movie (across all customers)
+                if (dr["AvgActorRate"] != DBNull.Value)
+                {
+                    double avg = Convert.ToDouble(dr["AvgActorRate"]);
+                    row.Cells["colActorAvgRate"].Value = Math.Round(avg, 1); // e.g. 4.3
+                }
+            }
+
+            dgvActorRatings.Enabled = true;
+            btnSaveActorRatings.Enabled = true;
+        }
+
+
+        private void btnSaveActorRatings_Click(object sender, EventArgs e)
+        {
+            if (selectedRentalRecordId == -1)
+            {
+                MessageBox.Show("Please return a movie first (so we know which rental to attach ratings to).");
+                return;
+            }
+
+            bool anySaved = false;
+
+            try
+            {
+                foreach (DataGridViewRow row in dgvActorRatings.Rows)
+                {
+                    if (row.IsNewRow)
+                        continue;
+
+                    object actorIdObj = row.Cells["colActorID"].Value;
+                    object ratingObj = row.Cells["colActorRating"].Value;
+
+                    if (actorIdObj == null || ratingObj == null || ratingObj == DBNull.Value)
+                        continue;
+
+                    int actorId = Convert.ToInt32(actorIdObj);
+                    int rating = Convert.ToInt32(ratingObj);
+
+                    if (rating < 1 || rating > 5)
+                        continue;
+
+                    string sql = @"
+IF EXISTS (SELECT 1 
+           FROM dbo.ActorRate 
+           WHERE RentalRecordID = @rid AND ActorID = @aid)
+BEGIN
+    UPDATE dbo.ActorRate
+       SET ActorRate = @rate
+     WHERE RentalRecordID = @rid AND ActorID = @aid;
+END
+ELSE
+BEGIN
+    INSERT INTO dbo.ActorRate (RentalRecordID, ActorID, ActorRate)
+    VALUES (@rid, @aid, @rate);
+END";
+
+                    DatabaseHelper.ExecuteNonQuery(
+                        sql,
+                        new SqlParameter("@rid", selectedRentalRecordId),
+                        new SqlParameter("@aid", actorId),
+                        new SqlParameter("@rate", rating));
+
+                    anySaved = true;
+                }
+
+                if (anySaved)
+                {
+                    MessageBox.Show("Actor ratings saved successfully.");
+                }
+                else
+                {
+                    MessageBox.Show("No actor ratings were selected to save.");
+                }
+                // reload actors so your ratings & averages are reflected in the grid
+                if (selectedMovieId != -1 && selectedRentalRecordId != -1)
+                {
+                    LoadActorsForMovie(selectedMovieId, selectedRentalRecordId);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error saving actor ratings: " + ex.Message);
+            }
+        }
+
+        private void lblActorRatings_Click(object sender, EventArgs e)
+        {
         }
     }
 }
