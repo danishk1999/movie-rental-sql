@@ -10,12 +10,24 @@ namespace MovieRentalApp
             InitializeComponent();
         }
 
+        private void btnSearchMovie_Click(object sender, EventArgs e)
+        {
+            using (var form = new SearchMovieForm())
+            {
+                if (form.ShowDialog() == DialogResult.OK)
+                {
+                    MovieName = form.SelectedMovieName;
+                }
+            }
+        }
+
         // Public properties used by MoviesForm to read values
         public string MovieName
         {
             get => txtMovieName.Text.Trim();
             set => txtMovieName.Text = value;
         }
+
 
         public string MovieType
         {
