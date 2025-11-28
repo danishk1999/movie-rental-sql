@@ -72,6 +72,12 @@
     <Compile Include="MonthlyEarnings.Designer.cs">
       <DependentUpon>MonthlyEarnings.cs</DependentUpon>
     </Compile>
+    <Compile Include="MovieRanks.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MovieRanks.Designer.cs">
+      <DependentUpon>MovieRanks.cs</DependentUpon>
+    </Compile>
     <Compile Include="RentalForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -142,6 +148,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MonthlyEarnings.resx">
       <DependentUpon>MonthlyEarnings.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MovieRanks.resx">
+      <DependentUpon>MovieRanks.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MoviesForm.resx">
       <DependentUpon>MoviesForm.cs</DependentUpon>
