@@ -32,15 +32,19 @@ namespace MovieRentalApp
         {
             using (var form = new RentalForm())
             {
+                this.Hide();
                 form.ShowDialog();
+                this.Show();
             }
         }
 
         private void btnReports_Click(object sender, EventArgs e)
         {
             using (var form = new Reports())
-            {
+            {   
+                this.Hide();
                 form.ShowDialog();
+                this.Show();
             }
 
         }

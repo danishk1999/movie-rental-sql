@@ -19,6 +19,7 @@ namespace MovieRentalApp
         private void EditCustomerForm_Load(object sender, EventArgs e)
         {
             this.Text = $"Editing CustomerID: {customerID}";
+
             LoadCustomerData();
             LoadPhoneNumbers();
         }
@@ -30,6 +31,7 @@ namespace MovieRentalApp
                 using (SqlConnection conn = DatabaseHelper.GetConnection())
                 {
                     conn.Open();
+
                     string query = @"
                         SELECT FirstName, LastName, Address, City, Province, PostalCode, 
                                Email, AccountNum, CreditCardNum
@@ -45,11 +47,16 @@ namespace MovieRentalApp
                             if (reader.Read())
                             {
                                 txtFirstName.Text = reader["FirstName"].ToString();
+
                                 txtLastName.Text = reader["LastName"].ToString();
+
                                 txtAddress.Text = reader["Address"].ToString();
                                 txtCity.Text = reader["City"].ToString();
+
                                 txtState.Text = reader["Province"].ToString();
+
                                 txtZipCode.Text = reader["PostalCode"].ToString();
+
                                 txtEmail.Text = reader["Email"].ToString();
                                 txtAccountNum.Text = reader["AccountNum"].ToString();
                                 txtCreditCard.Text = reader["CreditCardNum"].ToString();
@@ -119,8 +126,12 @@ namespace MovieRentalApp
                     using (SqlCommand cmd = new SqlCommand(sql, conn))
                     {
                         cmd.Parameters.AddWithValue("@CustomerID", customerID);
+
+
                         cmd.Parameters.AddWithValue("@PhoneNum", phone.PadRight(10));
+
                         cmd.Parameters.AddWithValue("@PhoneType", "Mobile");
+
                         cmd.ExecuteNonQuery();
                     }
                 }

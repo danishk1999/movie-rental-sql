@@ -8,12 +8,13 @@ namespace MovieRentalApp
     {
         private IContainer components = null;
 
-        private Label lblName;
+    private Label lblName;
         private Label lblType;
         private Label lblFee;
         private Label lblCopies;
 
         private TextBox txtMovieName;
+        private Button btnSearchMovie;
         private ComboBox cmbMovieType;
         private NumericUpDown numericFee;
         private NumericUpDown numericCopies;
@@ -38,6 +39,7 @@ namespace MovieRentalApp
             lblCopies = new Label();
 
             txtMovieName = new TextBox();
+            btnSearchMovie = new Button();
             cmbMovieType = new ComboBox();
             numericFee = new NumericUpDown();
             numericCopies = new NumericUpDown();
@@ -65,32 +67,42 @@ namespace MovieRentalApp
             lblCopies.AutoSize = true;
             lblCopies.Location = new System.Drawing.Point(20, 138);
 
-            // Controls
+            // Movie Name TextBox
             txtMovieName.Location = new System.Drawing.Point(160, 15);
-            txtMovieName.Width = 260;
+            txtMovieName.Width = 200;
 
+            // Search Button
+            btnSearchMovie.Text = "Search";
+            btnSearchMovie.Width = 80;
+            btnSearchMovie.Location = new System.Drawing.Point(370, 12);
+            btnSearchMovie.Click += new EventHandler(btnSearchMovie_Click);
+
+            // Movie Type ComboBox
             cmbMovieType.Location = new System.Drawing.Point(160, 55);
             cmbMovieType.Width = 160;
             cmbMovieType.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbMovieType.Items.AddRange(new object[] { "Comedy", "Drama", "Action", "Foreign" });
 
+            // Fee
             numericFee.Location = new System.Drawing.Point(160, 95);
             numericFee.Width = 120;
             numericFee.Maximum = 100000;
             numericFee.DecimalPlaces = 2;
             numericFee.Minimum = 0;
 
+            // Number of Copies
             numericCopies.Location = new System.Drawing.Point(160, 135);
             numericCopies.Width = 120;
             numericCopies.Maximum = 100000;
             numericCopies.Minimum = 0;
 
-            // Buttons
+            // OK Button
             btnOK.Text = "OK";
             btnOK.Width = 100;
             btnOK.Location = new System.Drawing.Point(120, 185);
             btnOK.Click += new EventHandler(btnOK_Click);
 
+            // Cancel Button
             btnCancel.Text = "Cancel";
             btnCancel.Width = 100;
             btnCancel.Location = new System.Drawing.Point(240, 185);
@@ -100,6 +112,7 @@ namespace MovieRentalApp
             this.ClientSize = new System.Drawing.Size(460, 230);
             this.Controls.Add(lblName);
             this.Controls.Add(txtMovieName);
+            this.Controls.Add(btnSearchMovie);
             this.Controls.Add(lblType);
             this.Controls.Add(cmbMovieType);
             this.Controls.Add(lblFee);
@@ -121,5 +134,7 @@ namespace MovieRentalApp
             ((ISupportInitialize)(numericCopies)).EndInit();
         }
     }
+
 }
+
 

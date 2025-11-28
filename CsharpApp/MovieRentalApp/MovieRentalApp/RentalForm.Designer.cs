@@ -41,9 +41,13 @@
             this.btnReturn = new System.Windows.Forms.Button();
             this.btnCustomerSearch = new System.Windows.Forms.Button();
             this.btnMovieSearch = new System.Windows.Forms.Button();
+            this.lblRate = new System.Windows.Forms.Label();
+            this.numRating = new System.Windows.Forms.NumericUpDown();
+            this.btnSaveRating = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.gridCustomerResults)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gridMovieResults)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gridRentalHistory)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numRating)).BeginInit();
             this.SuspendLayout();
             // 
             // label1
@@ -144,7 +148,7 @@
             // 
             // btnRent
             // 
-            this.btnRent.Location = new System.Drawing.Point(856, 451);
+            this.btnRent.Location = new System.Drawing.Point(677, 469);
             this.btnRent.Name = "btnRent";
             this.btnRent.Size = new System.Drawing.Size(75, 23);
             this.btnRent.TabIndex = 9;
@@ -154,7 +158,7 @@
             // 
             // btnReturn
             // 
-            this.btnReturn.Location = new System.Drawing.Point(856, 513);
+            this.btnReturn.Location = new System.Drawing.Point(677, 525);
             this.btnReturn.Name = "btnReturn";
             this.btnReturn.Size = new System.Drawing.Size(75, 23);
             this.btnReturn.TabIndex = 10;
@@ -182,11 +186,58 @@
             this.btnMovieSearch.UseVisualStyleBackColor = true;
             this.btnMovieSearch.Click += new System.EventHandler(this.btnMovieSearch_Click);
             // 
+            // lblRate
+            // 
+            this.lblRate.AutoSize = true;
+            this.lblRate.Font = new System.Drawing.Font("Times New Roman", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblRate.Location = new System.Drawing.Point(793, 500);
+            this.lblRate.Name = "lblRate";
+            this.lblRate.Size = new System.Drawing.Size(119, 15);
+            this.lblRate.TabIndex = 13;
+            this.lblRate.Text = "Rate this movie (1-5):";
+            // 
+            // numRating
+            // 
+            this.numRating.Enabled = false;
+            this.numRating.Location = new System.Drawing.Point(918, 500);
+            this.numRating.Maximum = new decimal(new int[] {
+            5,
+            0,
+            0,
+            0});
+            this.numRating.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numRating.Name = "numRating";
+            this.numRating.Size = new System.Drawing.Size(34, 20);
+            this.numRating.TabIndex = 14;
+            this.numRating.Value = new decimal(new int[] {
+            3,
+            0,
+            0,
+            0});
+            // 
+            // btnSaveRating
+            // 
+            this.btnSaveRating.Enabled = false;
+            this.btnSaveRating.Location = new System.Drawing.Point(958, 493);
+            this.btnSaveRating.Name = "btnSaveRating";
+            this.btnSaveRating.Size = new System.Drawing.Size(82, 31);
+            this.btnSaveRating.TabIndex = 15;
+            this.btnSaveRating.Text = "Save Rating";
+            this.btnSaveRating.UseVisualStyleBackColor = true;
+            this.btnSaveRating.Click += new System.EventHandler(this.btnSaveRating_Click);
+            // 
             // RentalForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1207, 637);
+            this.Controls.Add(this.btnSaveRating);
+            this.Controls.Add(this.numRating);
+            this.Controls.Add(this.lblRate);
             this.Controls.Add(this.btnMovieSearch);
             this.Controls.Add(this.btnCustomerSearch);
             this.Controls.Add(this.btnReturn);
@@ -206,6 +257,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.gridCustomerResults)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.gridMovieResults)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.gridRentalHistory)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numRating)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -226,5 +278,8 @@
         private System.Windows.Forms.Button btnReturn;
         private System.Windows.Forms.Button btnCustomerSearch;
         private System.Windows.Forms.Button btnMovieSearch;
+        private System.Windows.Forms.Label lblRate;
+        private System.Windows.Forms.NumericUpDown numRating;
+        private System.Windows.Forms.Button btnSaveRating;
     }
 }

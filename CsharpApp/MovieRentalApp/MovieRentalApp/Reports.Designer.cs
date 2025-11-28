@@ -39,8 +39,9 @@
             // 
             this.monthlyEarn.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.monthlyEarn.Location = new System.Drawing.Point(109, 22);
+            this.monthlyEarn.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.monthlyEarn.Name = "monthlyEarn";
-            this.monthlyEarn.Size = new System.Drawing.Size(305, 67);
+            this.monthlyEarn.Size = new System.Drawing.Size(305, 66);
             this.monthlyEarn.TabIndex = 0;
             this.monthlyEarn.Text = "Monthly Earnings";
             this.monthlyEarn.UseVisualStyleBackColor = true;
@@ -50,39 +51,45 @@
             // 
             this.movieRanks.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.movieRanks.Location = new System.Drawing.Point(109, 95);
+            this.movieRanks.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.movieRanks.Name = "movieRanks";
-            this.movieRanks.Size = new System.Drawing.Size(305, 67);
+            this.movieRanks.Size = new System.Drawing.Size(305, 66);
             this.movieRanks.TabIndex = 1;
-            this.movieRanks.Text = "Movie Ranks";
+            this.movieRanks.Text = "Top 3 Movie Ranks";
             this.movieRanks.UseVisualStyleBackColor = true;
             // 
             // custTotRentals
             // 
             this.custTotRentals.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.custTotRentals.Location = new System.Drawing.Point(109, 168);
+            this.custTotRentals.Location = new System.Drawing.Point(109, 167);
+            this.custTotRentals.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.custTotRentals.Name = "custTotRentals";
-            this.custTotRentals.Size = new System.Drawing.Size(305, 67);
+            this.custTotRentals.Size = new System.Drawing.Size(305, 66);
             this.custTotRentals.TabIndex = 2;
-            this.custTotRentals.Text = "Customers and Their Total Rentals";
+            this.custTotRentals.Text = "Top  5 Customers in Renting";
             this.custTotRentals.UseVisualStyleBackColor = true;
+            this.custTotRentals.Click += new System.EventHandler(this.custTotRentals_Click);
             // 
             // button4
             // 
             this.button4.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button4.Location = new System.Drawing.Point(109, 241);
+            this.button4.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(305, 67);
+            this.button4.Size = new System.Drawing.Size(305, 66);
             this.button4.TabIndex = 3;
-            this.button4.Text = "Movies in Queue";
+            this.button4.Text = "Top 3 Movies in Queue";
             this.button4.UseVisualStyleBackColor = true;
             // 
             // button5
             // 
+            this.button5.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.button5.Location = new System.Drawing.Point(109, 314);
+            this.button5.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(305, 67);
+            this.button5.Size = new System.Drawing.Size(305, 66);
             this.button5.TabIndex = 4;
-            this.button5.Text = "button5";
+            this.button5.Text = "Top 3 Employees";
             this.button5.UseVisualStyleBackColor = true;
             // 
             // Reports
@@ -95,6 +102,7 @@
             this.Controls.Add(this.custTotRentals);
             this.Controls.Add(this.movieRanks);
             this.Controls.Add(this.monthlyEarn);
+            this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "Reports";
             this.Text = "Reports";
             this.ResumeLayout(false);

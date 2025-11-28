@@ -72,6 +72,12 @@
     <Compile Include="MonthlyEarnings.Designer.cs">
       <DependentUpon>MonthlyEarnings.cs</DependentUpon>
     </Compile>
+    <Compile Include="MovieRanks.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MovieRanks.Designer.cs">
+      <DependentUpon>MovieRanks.cs</DependentUpon>
+    </Compile>
     <Compile Include="RentalForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -116,6 +122,18 @@
     <Compile Include="Reports.Designer.cs">
       <DependentUpon>Reports.cs</DependentUpon>
     </Compile>
+    <Compile Include="SearchMovieForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SearchMovieForm.Designer.cs">
+      <DependentUpon>SearchMovieForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="TopCustomersForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TopCustomersForm.Designer.cs">
+      <DependentUpon>TopCustomersForm.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="CustomersForm.resx">
       <DependentUpon>CustomersForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -130,6 +148,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MonthlyEarnings.resx">
       <DependentUpon>MonthlyEarnings.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MovieRanks.resx">
+      <DependentUpon>MovieRanks.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MoviesForm.resx">
       <DependentUpon>MoviesForm.cs</DependentUpon>
@@ -148,6 +169,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Reports.resx">
       <DependentUpon>Reports.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SearchMovieForm.resx">
+      <DependentUpon>SearchMovieForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TopCustomersForm.resx">
+      <DependentUpon>TopCustomersForm.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
