@@ -52,15 +52,23 @@ namespace MovieRentalApp
         private void ShowTopThree(int month, int year)
         {
             string query = @"
-                SELECT TOP 3 
-                    M.MovieName as MovieTitle,
-                    COUNT(*) AS RentalCount
-                FROM RentalRecord R
-                JOIN Movie M ON R.MovieID = M.MovieID
-                WHERE MONTH(R.CheckoutTime) = @Month 
-                    AND YEAR(R.CheckoutTime) = @Year
-                GROUP BY M.MovieName
-                ORDER BY RentalCount DESC";
+                SELECT TOP 3
+                    MovieTitle,
+                    RentalCount,
+                    RANK() OVER (ORDER BY RentalCount DESC) AS MovieRank
+                FROM
+                (
+                    SELECT 
+                        M.MovieName AS MovieTitle,
+                        COUNT(*) AS RentalCount
+                    FROM RentalRecord R
+                    JOIN Movie M ON R.MovieID = M.MovieID
+                    WHERE MONTH(R.CheckoutTime) = @Month
+                      AND YEAR(R.CheckoutTime) = @Year
+                    GROUP BY M.MovieName
+                ) AS x
+                ORDER BY MovieRank, MovieTitle;
+";
             
             DataTable dt = DatabaseHelper.ExecuteSelect(query, new SqlParameter("@Month", month),
                 new SqlParameter("@Year", year));
@@ -69,9 +77,13 @@ namespace MovieRentalApp
 
             movieRankGridView.Columns["MovieTitle"].HeaderText = "Movie Title";
             movieRankGridView.Columns["RentalCount"].HeaderText = "Number of Rentals";
+            movieRankGridView.Columns["MovieRank"].HeaderText = "Rank";
+
 
             movieRankGridView.AutoResizeColumns();
 
         }
+
+        
     }
 }

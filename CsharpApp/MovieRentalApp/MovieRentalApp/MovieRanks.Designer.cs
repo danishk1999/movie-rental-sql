@@ -40,11 +40,11 @@
             // movieRankGridView
             // 
             this.movieRankGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.movieRankGridView.Location = new System.Drawing.Point(95, 117);
+            this.movieRankGridView.Location = new System.Drawing.Point(25, 117);
             this.movieRankGridView.Name = "movieRankGridView";
             this.movieRankGridView.RowHeadersWidth = 51;
             this.movieRankGridView.RowTemplate.Height = 24;
-            this.movieRankGridView.Size = new System.Drawing.Size(270, 286);
+            this.movieRankGridView.Size = new System.Drawing.Size(399, 262);
             this.movieRankGridView.TabIndex = 0;
             // 
             // monthComboBox
@@ -91,6 +91,7 @@
             this.goButton.TabIndex = 5;
             this.goButton.Text = "GO";
             this.goButton.UseVisualStyleBackColor = true;
+            this.goButton.Click += new System.EventHandler(this.goButton_Click);
             // 
             // MovieRanks
             // 
