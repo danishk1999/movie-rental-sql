@@ -57,6 +57,7 @@
             this.movieRanks.TabIndex = 1;
             this.movieRanks.Text = "Top 3 Movie Ranks";
             this.movieRanks.UseVisualStyleBackColor = true;
+            this.movieRanks.Click += new System.EventHandler(this.movieRanks_Click);
             // 
             // custTotRentals
             // 

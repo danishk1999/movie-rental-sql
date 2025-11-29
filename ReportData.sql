@@ -1,4 +1,4 @@
-USE MovieRentalDb;
+USE Proj2025F;
 
 -- Monthly earnings by quantity and dollar amount
 select year(R.CheckoutTime) as RentalYear, month(R.CheckoutTime) as RentalMonth,
@@ -9,13 +9,17 @@ where R.MovieID = M.MovieID
 group by year(R.CheckoutTime), month(R.CheckoutTime)
 order by RentalYear, RentalMonth;
 
--- ranks movies by number of rental records
-select M.MovieID, M.MovieName, M.MovieType,
-count(RR.RentalRecordID) as TotalRentals
-from Movie M
-left outer join RentalRecord RR on M.MovieID = RR.MovieID
-group by M.MovieID, M.MovieName, M.MovieType
-order by TotalRentals DESC; 
+-- top 3 ranking movies by number of rental records
+SELECT TOP 3
+    M.MovieName AS MovieTitle,
+    COUNT(R.MovieID) AS TimesRented
+FROM RentalRecord R
+JOIN Movie M ON R.MovieID = M.MovieID
+WHERE MONTH(R.CheckoutTime) = @Month
+  AND YEAR(R.CheckoutTime) = @Year
+GROUP BY M.MovieName
+ORDER BY TimesRented DESC;
+
 
 
 -- Customers total rentals
