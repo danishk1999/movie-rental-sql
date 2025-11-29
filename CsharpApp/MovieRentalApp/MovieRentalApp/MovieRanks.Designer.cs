@@ -33,32 +33,33 @@
             this.yearComboBox = new System.Windows.Forms.ComboBox();
             this.monthRank = new System.Windows.Forms.Label();
             this.yearRank = new System.Windows.Forms.Label();
+            this.goButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.movieRankGridView)).BeginInit();
             this.SuspendLayout();
             // 
             // movieRankGridView
             // 
             this.movieRankGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.movieRankGridView.Location = new System.Drawing.Point(98, 71);
-            this.movieRankGridView.Name = "dataGridView1";
+            this.movieRankGridView.Location = new System.Drawing.Point(95, 117);
+            this.movieRankGridView.Name = "movieRankGridView";
             this.movieRankGridView.RowHeadersWidth = 51;
             this.movieRankGridView.RowTemplate.Height = 24;
             this.movieRankGridView.Size = new System.Drawing.Size(270, 286);
             this.movieRankGridView.TabIndex = 0;
             // 
-            // monthcomboBox1
+            // monthComboBox
             // 
             this.monthComboBox.FormattingEnabled = true;
             this.monthComboBox.Location = new System.Drawing.Point(109, 23);
-            this.monthComboBox.Name = "comboBox1";
+            this.monthComboBox.Name = "monthComboBox";
             this.monthComboBox.Size = new System.Drawing.Size(108, 24);
             this.monthComboBox.TabIndex = 1;
             // 
-            // yearcomboBox2
+            // yearComboBox
             // 
             this.yearComboBox.FormattingEnabled = true;
             this.yearComboBox.Location = new System.Drawing.Point(303, 23);
-            this.yearComboBox.Name = "comboBox2";
+            this.yearComboBox.Name = "yearComboBox";
             this.yearComboBox.Size = new System.Drawing.Size(121, 24);
             this.yearComboBox.TabIndex = 2;
             // 
@@ -82,11 +83,21 @@
             this.yearRank.TabIndex = 4;
             this.yearRank.Text = "Year :";
             // 
+            // goButton
+            // 
+            this.goButton.Location = new System.Drawing.Point(181, 64);
+            this.goButton.Name = "goButton";
+            this.goButton.Size = new System.Drawing.Size(92, 24);
+            this.goButton.TabIndex = 5;
+            this.goButton.Text = "GO";
+            this.goButton.UseVisualStyleBackColor = true;
+            // 
             // MovieRanks
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(473, 427);
+            this.Controls.Add(this.goButton);
             this.Controls.Add(this.yearRank);
             this.Controls.Add(this.monthRank);
             this.Controls.Add(this.yearComboBox);
@@ -107,5 +118,6 @@
         private System.Windows.Forms.ComboBox yearComboBox;
         private System.Windows.Forms.Label monthRank;
         private System.Windows.Forms.Label yearRank;
+        private System.Windows.Forms.Button goButton;
     }
 }
