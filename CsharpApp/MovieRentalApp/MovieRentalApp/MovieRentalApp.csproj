@@ -47,6 +47,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AddActorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="AddEditMovieForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -65,6 +68,9 @@
     </Compile>
     <Compile Include="EditCustomerForm.Designer.cs">
       <DependentUpon>EditCustomerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ManageMovieActorsForm.cs">
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="MonthlyEarnings.cs">
       <SubType>Form</SubType>
