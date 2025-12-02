@@ -40,5 +40,11 @@ namespace MovieRentalApp
             
 
         }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            Top3Employees top3EmployeesForm = new Top3Employees();
+            top3EmployeesForm.ShowDialog();
+        }
     }
 }

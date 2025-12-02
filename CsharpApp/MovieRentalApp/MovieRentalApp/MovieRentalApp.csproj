@@ -128,6 +128,12 @@
     <Compile Include="SearchMovieForm.Designer.cs">
       <DependentUpon>SearchMovieForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Top3Employees.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Top3Employees.Designer.cs">
+      <DependentUpon>Top3Employees.cs</DependentUpon>
+    </Compile>
     <Compile Include="TopCustomersForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -172,6 +178,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="SearchMovieForm.resx">
       <DependentUpon>SearchMovieForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Top3Employees.resx">
+      <DependentUpon>Top3Employees.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="TopCustomersForm.resx">
       <DependentUpon>TopCustomersForm.cs</DependentUpon>
