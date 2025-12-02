@@ -300,7 +300,7 @@ namespace MovieRentalApp
         {
             string keyword = txtSearch.Text.Trim();
 
-            // empty search → blank grid
+            // empty search  blank grid
             if (string.IsNullOrEmpty(keyword))
             {
                 gridCustomers.DataSource = null;
@@ -340,6 +340,8 @@ namespace MovieRentalApp
                             MessageBox.Show("No customers found.");
 
                         gridCustomers.DataSource = dt;
+
+                        //hide the CustomerID column when the serched customer appears
 
                         if (gridCustomers.Columns.Contains("CustomerID"))
                             gridCustomers.Columns["CustomerID"].Visible = false;
