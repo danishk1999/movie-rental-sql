@@ -23,5 +23,28 @@ namespace MovieRentalApp
             monthlyEarningsForm.ShowDialog();
 
         }
+
+        private void custTotRentals_Click(object sender, EventArgs e)
+        {
+            this.Hide();
+            TopCustomersForm topForm = new TopCustomersForm();
+            topForm.ShowDialog();
+            this.Show();
+        }
+
+        private void movieRanks_Click(object sender, EventArgs e)
+        {
+            
+            MovieRanks rankingsForm = new MovieRanks();
+            rankingsForm.ShowDialog();
+            
+
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            Top3Employees top3EmployeesForm = new Top3Employees();
+            top3EmployeesForm.ShowDialog();
+        }
     }
 }
