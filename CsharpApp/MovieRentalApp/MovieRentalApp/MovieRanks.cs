@@ -44,46 +44,68 @@ namespace MovieRentalApp
 
         private void goButton_Click(object sender, EventArgs e)
         {
-            int month = monthComboBox.SelectedIndex + 1;
-            int year = int.Parse(yearComboBox.SelectedItem.ToString());
-            ShowTopThree(month, year);
+            try
+            {
+                int month = monthComboBox.SelectedIndex + 1;
+                int year = int.Parse(yearComboBox.SelectedItem.ToString());
+                ShowTopThree(month, year);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message);
+            }
         }
 
         private void ShowTopThree(int month, int year)
         {
-            string query = @"
-                SELECT TOP 3
-                    MovieTitle,
-                    RentalCount,
-                    RANK() OVER (ORDER BY RentalCount DESC) AS MovieRank
-                FROM
-                (
-                    SELECT 
-                        M.MovieName AS MovieTitle,
-                        COUNT(*) AS RentalCount
-                    FROM RentalRecord R
-                    JOIN Movie M ON R.MovieID = M.MovieID
-                    WHERE MONTH(R.CheckoutTime) = @Month
-                      AND YEAR(R.CheckoutTime) = @Year
-                    GROUP BY M.MovieName
-                ) AS x
-                ORDER BY MovieRank, MovieTitle;
-";
-            
-            DataTable dt = DatabaseHelper.ExecuteSelect(query, new SqlParameter("@Month", month),
-                new SqlParameter("@Year", year));
-            
-            movieRankGridView.DataSource = dt;
+            try
+            {
+                string query = @"
+                    SELECT TOP 3
+                        MovieTitle,
+                        RentalCount,
+                        RANK() OVER (ORDER BY RentalCount DESC) AS MovieRank
+                    FROM
+                    (
+                        SELECT 
+                            M.MovieName AS MovieTitle,
+                            COUNT(*) AS RentalCount
+                        FROM RentalRecord R
+                        JOIN Movie M ON R.MovieID = M.MovieID
+                        WHERE MONTH(R.CheckoutTime) = @Month
+                          AND YEAR(R.CheckoutTime) = @Year
+                        GROUP BY M.MovieName
+                    ) AS x
+                    ORDER BY MovieRank, MovieTitle;
+                ";
 
-            movieRankGridView.Columns["MovieTitle"].HeaderText = "Movie Title";
-            movieRankGridView.Columns["RentalCount"].HeaderText = "Number of Rentals";
-            movieRankGridView.Columns["MovieRank"].HeaderText = "Rank";
+                DataTable dt = DatabaseHelper.ExecuteSelect(query, new SqlParameter("@Month", month),
+                    new SqlParameter("@Year", year));
+
+                if (dt.Rows.Count == 0)
+                {
+                    MessageBox.Show("No rental records found for the selected month and year.");
+                    movieRankGridView.DataSource = null;
+                    return;
+                }
+
+                movieRankGridView.DataSource = dt;
+
+                movieRankGridView.Columns["MovieTitle"].HeaderText = "Movie Title";
+                movieRankGridView.Columns["RentalCount"].HeaderText = "Number of Rentals";
+                movieRankGridView.Columns["MovieRank"].HeaderText = "Rank";
 
 
-            movieRankGridView.AutoResizeColumns();
+                movieRankGridView.AutoResizeColumns();
+
+            }
+            catch (SqlException sqlEx)
+            {
+                MessageBox.Show("Database error: " + sqlEx.Message);
+            }
+
+
 
         }
-
-        
     }
 }
