@@ -109,6 +109,6 @@ namespace MovieRentalApp
             txtPassword.PasswordChar = chkShowPassword.Checked ? '\0' : '*';
         }
 
-        
+
     }
 }
