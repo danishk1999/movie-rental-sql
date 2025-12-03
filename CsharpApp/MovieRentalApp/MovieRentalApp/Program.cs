@@ -12,7 +12,7 @@ namespace MovieRentalApp
             Application.SetCompatibleTextRenderingDefault(false);
 
         
-            Application.Run(new  MainForm());
+            Application.Run(new  LoginForm());
             
         }
     }
