@@ -706,25 +706,26 @@ WHERE CustomerID = @cid AND MovieID = @mid;";
             catch { }
 
             string sql = @"
-        SELECT 
-            a.ActorID,
-            a.Name AS ActorName,
-            ar.ActorRate,  -- this customer's rating for this rental (may be NULL)
-            (
-                SELECT AVG(CAST(ar2.ActorRate AS float))
-                FROM dbo.ActorRate ar2
-                JOIN dbo.RentalRecord rr2 
-                    ON rr2.RentalRecordID = ar2.RentalRecordID
-                WHERE rr2.MovieID = @mid
-                  AND ar2.ActorID = a.ActorID
-            ) AS AvgActorRate
-        FROM dbo.Actor a
-        INNER JOIN dbo.ActorAppear aa
-            ON a.ActorID = aa.ActorID
-        LEFT JOIN dbo.ActorRate ar
-            ON ar.ActorID = a.ActorID
-           AND ar.RentalRecordID = @rid
-        WHERE aa.MovieID = @mid;";
+SELECT 
+    a.ActorID,
+    a.Name AS ActorName,
+    ar.ActorRate,  -- this customer's rating for this rental (may be NULL)
+    (
+        SELECT AVG(CAST(ar2.ActorRate AS float))
+        FROM dbo.ActorRate ar2
+        JOIN dbo.RentalRecord rr2 
+            ON rr2.RentalRecordID = ar2.RentalRecordID
+        WHERE rr2.MovieID = @mid
+          AND ar2.ActorID = a.ActorID
+          AND ar2.ActorRate IS NOT NULL
+    ) AS AvgActorRate
+FROM dbo.Actor a
+INNER JOIN dbo.ActorAppear aa
+    ON a.ActorID = aa.ActorID
+LEFT JOIN dbo.ActorRate ar
+    ON ar.ActorID = a.ActorID
+   AND ar.RentalRecordID = @rid
+WHERE aa.MovieID = @mid;";
 
             DataTable dt = DatabaseHelper.ExecuteSelect(
                 sql,
@@ -746,23 +747,29 @@ WHERE CustomerID = @cid AND MovieID = @mid;";
                 row.Cells["colActorID"].Value = dr["ActorID"];
                 row.Cells["colActorName"].Value = dr["ActorName"];
 
-                // your rating for THIS rental (if it exists in ActorRate)
-                if (dr["ActorRate"] != DBNull.Value)
+                // this customer's rating for THIS rental (if it exists)
+                if (dr["ActorRate"] != DBNull.Value && dr["ActorRate"] != null)
                 {
                     row.Cells["colActorRating"].Value = Convert.ToInt32(dr["ActorRate"]);
                 }
 
                 // average rating for this actor in this movie (across all customers)
-                if (dr["AvgActorRate"] != DBNull.Value)
+                if (dr["AvgActorRate"] != DBNull.Value && dr["AvgActorRate"] != null)
                 {
                     double avg = Convert.ToDouble(dr["AvgActorRate"]);
                     row.Cells["colActorAvgRate"].Value = Math.Round(avg, 1); // e.g. 4.3
+                }
+                else
+                {
+                    // no previous ratings yet
+                    row.Cells["colActorAvgRate"].Value = "N/A";
                 }
             }
 
             dgvActorRatings.Enabled = true;
             btnSaveActorRatings.Enabled = true;
         }
+
 
         private void btnSaveActorRatings_Click(object sender, EventArgs e)
         {
