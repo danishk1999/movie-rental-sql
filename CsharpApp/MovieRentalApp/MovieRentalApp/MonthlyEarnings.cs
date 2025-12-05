@@ -43,6 +43,10 @@ namespace MovieRentalApp
 
         private void ShowReport(int year)
         {
+            try
+            {
+                dataGridView1.DataSource = null;
+            
             string query = @"
                 WITH Months AS (
                     SELECT 1 AS MonthNumber, 'January' AS MonthName UNION ALL
@@ -80,7 +84,18 @@ namespace MovieRentalApp
                 new SqlParameter("@Year", year)
             );
 
+            
+
             dataGridView1.DataSource = dt;
+        }   
+
+        catch (SqlException ex)
+        {
+            MessageBox.Show("Error retrieving data: " + ex.Message);
+            return;
+        }
+
+                     
         }
 
 

@@ -47,6 +47,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AddActorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="AddEditMovieForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -65,6 +68,9 @@
     </Compile>
     <Compile Include="EditCustomerForm.Designer.cs">
       <DependentUpon>EditCustomerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ManageMovieActorsForm.cs">
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="MonthlyEarnings.cs">
       <SubType>Form</SubType>
@@ -134,6 +140,12 @@
     <Compile Include="Top3Employees.Designer.cs">
       <DependentUpon>Top3Employees.cs</DependentUpon>
     </Compile>
+    <Compile Include="Top3Movies.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Top3Movies.Designer.cs">
+      <DependentUpon>Top3Movies.cs</DependentUpon>
+    </Compile>
     <Compile Include="TopCustomersForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -181,6 +193,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Top3Employees.resx">
       <DependentUpon>Top3Employees.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Top3Movies.resx">
+      <DependentUpon>Top3Movies.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="TopCustomersForm.resx">
       <DependentUpon>TopCustomersForm.cs</DependentUpon>

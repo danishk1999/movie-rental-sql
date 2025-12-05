@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace MovieRentalApp
@@ -18,23 +19,42 @@ namespace MovieRentalApp
             LoadMovies();
         }
 
-        private void LoadMovies()
+        private void LoadMovies(string searchText = "")
         {
             try
             {
                 using (SqlConnection conn = DatabaseHelper.GetConnection())
                 {
-                    string query = @"SELECT MovieID, MovieName, MovieType, Fee, NumOfCopy FROM Movie ORDER BY MovieName";
+                    string query = @"
+                        SELECT 
+                            M.MovieID, 
+                            M.MovieName, 
+                            M.MovieType, 
+                            M.Fee, 
+                            M.NumOfCopy,
+                            ISNULL(STRING_AGG(A.Name, ', '), '') AS Actors
+                        FROM Movie M
+                        LEFT JOIN ActorAppear AA ON M.MovieID = AA.MovieID
+                        LEFT JOIN Actor A ON AA.ActorID = A.ActorID
+                        WHERE M.MovieName LIKE @search OR M.MovieType LIKE @search
+                        GROUP BY M.MovieID, M.MovieName, M.MovieType, M.Fee, M.NumOfCopy
+                        ORDER BY M.MovieName";
+
                     SqlDataAdapter adapter = new SqlDataAdapter(query, conn);
+                    adapter.SelectCommand.Parameters.AddWithValue("@search", "%" + searchText + "%");
+
                     DataTable dt = new DataTable();
                     adapter.Fill(dt);
                     dgvMovies.DataSource = dt;
 
-                    // Cosmetic: ensure columns exist before formatting
+                    // Cosmetic formatting
                     if (dgvMovies.Columns.Contains("MovieID"))
                         dgvMovies.Columns["MovieID"].ReadOnly = true;
                     if (dgvMovies.Columns.Contains("Fee"))
                         dgvMovies.Columns["Fee"].DefaultCellStyle.Format = "N2";
+
+                    if (dgvMovies.Columns.Contains("Actors"))
+                        dgvMovies.Columns["Actors"].HeaderText = "Assigned Actors";
                 }
             }
             catch (Exception ex)
@@ -48,7 +68,6 @@ namespace MovieRentalApp
             using (var form = new AddEditMovieForm())
             {
                 form.Text = "Add Movie";
-                // default values can remain
                 if (form.ShowDialog(this) == DialogResult.OK)
                 {
                     try
@@ -69,7 +88,6 @@ namespace MovieRentalApp
                                 cmd.ExecuteNonQuery();
                             }
                         }
-
                         LoadMovies();
                     }
                     catch (Exception ex)
@@ -90,18 +108,14 @@ namespace MovieRentalApp
 
             var row = dgvMovies.SelectedRows[0];
             int movieID = Convert.ToInt32(row.Cells["MovieID"].Value);
-            string currentName = row.Cells["MovieName"].Value?.ToString() ?? "";
-            string currentType = row.Cells["MovieType"].Value?.ToString() ?? "";
-            decimal currentFee = row.Cells["Fee"].Value == DBNull.Value ? 0m : Convert.ToDecimal(row.Cells["Fee"].Value);
-            int currentCopies = row.Cells["NumOfCopy"].Value == DBNull.Value ? 0 : Convert.ToInt32(row.Cells["NumOfCopy"].Value);
 
             using (var form = new AddEditMovieForm())
             {
                 form.Text = "Edit Movie";
-                form.MovieName = currentName;
-                form.MovieType = currentType;
-                form.Fee = currentFee;
-                form.NumOfCopies = currentCopies;
+                form.MovieName = row.Cells["MovieName"].Value?.ToString() ?? "";
+                form.MovieType = row.Cells["MovieType"].Value?.ToString() ?? "";
+                form.Fee = row.Cells["Fee"].Value == DBNull.Value ? 0m : Convert.ToDecimal(row.Cells["Fee"].Value);
+                form.NumOfCopies = row.Cells["NumOfCopy"].Value == DBNull.Value ? 0 : Convert.ToInt32(row.Cells["NumOfCopy"].Value);
 
                 if (form.ShowDialog(this) == DialogResult.OK)
                 {
@@ -111,11 +125,8 @@ namespace MovieRentalApp
                         {
                             const string updateQuery = @"
                                 UPDATE Movie
-                                SET MovieName = @name,
-                                    MovieType = @type,
-                                    Fee = @fee,
-                                    NumOfCopy = @copies
-                                WHERE MovieID = @id";
+                                SET MovieName=@name, MovieType=@type, Fee=@fee, NumOfCopy=@copies
+                                WHERE MovieID=@id";
                             using (SqlCommand cmd = new SqlCommand(updateQuery, conn))
                             {
                                 cmd.Parameters.AddWithValue("@name", form.MovieName);
@@ -128,7 +139,6 @@ namespace MovieRentalApp
                                 cmd.ExecuteNonQuery();
                             }
                         }
-
                         LoadMovies();
                     }
                     catch (Exception ex)
@@ -157,7 +167,7 @@ namespace MovieRentalApp
             {
                 using (SqlConnection conn = DatabaseHelper.GetConnection())
                 {
-                    const string deleteQuery = @"DELETE FROM Movie WHERE MovieID = @id";
+                    const string deleteQuery = @"DELETE FROM Movie WHERE MovieID=@id";
                     using (SqlCommand cmd = new SqlCommand(deleteQuery, conn))
                     {
                         cmd.Parameters.AddWithValue("@id", movieID);
@@ -165,20 +175,37 @@ namespace MovieRentalApp
                         cmd.ExecuteNonQuery();
                     }
                 }
-
                 LoadMovies();
             }
             catch (SqlException sqlex)
             {
-                // common cause: FK constraints (ActorAppear, CustomerQueue, RentalRecord)
-                MessageBox.Show("Could not delete movie. There may be related records (rentals, actor appearances, queues).\n\n" + sqlex.Message, "Delete Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Could not delete movie. There may be related records.\n\n" + sqlex.Message, "Delete Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error deleting movie: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        private void btnManageActors_Click(object sender, EventArgs e)
+        {
+            if (dgvMovies.CurrentRow == null)
+            {
+                MessageBox.Show("Select a movie first.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            int movieID = Convert.ToInt32(dgvMovies.CurrentRow.Cells["MovieID"].Value);
+            string movieName = dgvMovies.CurrentRow.Cells["MovieName"].Value.ToString();
+
+            using (var form = new ManageMovieActorsForm(movieID, movieName))
+            {
+                form.ShowDialog();
+                LoadMovies(); // refresh after managing actors
+            }
+        }
     }
 }
+
 
 
