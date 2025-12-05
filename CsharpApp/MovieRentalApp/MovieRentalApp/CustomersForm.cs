@@ -7,7 +7,6 @@ namespace MovieRentalApp
 {
     public partial class CustomersForm : Form
     {
-        // store the selected customer ID
         private int selectedCustomerID = -1;
 
         public CustomersForm()
@@ -15,14 +14,12 @@ namespace MovieRentalApp
             InitializeComponent();
         }
 
-        // when form loads keep the list empty
         private void CustomersForm_Load(object sender, EventArgs e)
         {
             this.Text = "Customer Management";
-            gridCustomers.DataSource = null; // blank until user searches
+            gridCustomers.DataSource = null;
         }
 
-        // load all customers 
         private void LoadCustomerData()
         {
             try
@@ -50,7 +47,6 @@ namespace MovieRentalApp
             }
         }
 
-        // check if phone number is valid
         private bool ValidatePhoneNumber(string phone)
         {
             if (phone.Length != 10)
@@ -71,7 +67,6 @@ namespace MovieRentalApp
             return true;
         }
 
-        // check email is valid
         private bool ValidateEmail(string email)
         {
             if (!email.Contains("@"))
@@ -97,7 +92,6 @@ namespace MovieRentalApp
             return true;
         }
 
-        // Add new customer
         private void btnAdd_Click(object sender, EventArgs e)
         {
             string firstName = txtFirstName.Text.Trim();
@@ -105,7 +99,6 @@ namespace MovieRentalApp
             string email = txtEmail.Text.Trim();
             string phone = txtPhone.Text.Trim();
 
-            // check fields
             if (string.IsNullOrEmpty(firstName) ||
                 string.IsNullOrEmpty(lastName) ||
                 string.IsNullOrEmpty(email) ||
@@ -124,7 +117,6 @@ namespace MovieRentalApp
                 {
                     conn.Open();
 
-                    // insert customer
                     string sqlCustomer = @"
                         INSERT INTO Customer (
                             CustomerID,
@@ -169,7 +161,6 @@ namespace MovieRentalApp
                         newCustomerID = (int)cmd.ExecuteScalar();
                     }
 
-                    // insert phone number
                     string sqlPhone = @"
                         INSERT INTO CustomerPhone (CustomerID, PhoneNum, PhoneType, StartTime, EndTime)
                         VALUES (@CustomerID, @PhoneNum, @PhoneType, GETDATE(), NULL);";
@@ -193,7 +184,6 @@ namespace MovieRentalApp
             }
         }
 
-        // open edit window
         private void btnUpdate_Click(object sender, EventArgs e)
         {
             if (gridCustomers.SelectedRows.Count == 0)
@@ -212,7 +202,6 @@ namespace MovieRentalApp
             }
         }
 
-        // delete customer
         private void btnDelete_Click(object sender, EventArgs e)
         {
             if (gridCustomers.SelectedRows.Count == 0)
@@ -237,22 +226,6 @@ namespace MovieRentalApp
                 {
                     conn.Open();
 
-                    // delete actor rates
-                    string deleteActorRate = @"
-                        DELETE FROM ActorRate
-                        WHERE RentalRecordID IN (
-                            SELECT RentalRecordID
-                            FROM RentalRecord
-                            WHERE CustomerID = @CustomerID
-                        );";
-
-                    using (SqlCommand cmd = new SqlCommand(deleteActorRate, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@CustomerID", customerID);
-                        cmd.ExecuteNonQuery();
-                    }
-
-                    // delete phone numbers
                     string deletePhones = "DELETE FROM CustomerPhone WHERE CustomerID = @CustomerID;";
                     using (SqlCommand cmd = new SqlCommand(deletePhones, conn))
                     {
@@ -260,7 +233,6 @@ namespace MovieRentalApp
                         cmd.ExecuteNonQuery();
                     }
 
-                    // delete queue
                     string deleteQueue = "DELETE FROM CustomerQueue WHERE CustomerID = @CustomerID;";
                     using (SqlCommand cmd = new SqlCommand(deleteQueue, conn))
                     {
@@ -268,15 +240,6 @@ namespace MovieRentalApp
                         cmd.ExecuteNonQuery();
                     }
 
-                    // delete rentals
-                    string deleteRentals = "DELETE FROM RentalRecord WHERE CustomerID = @CustomerID;";
-                    using (SqlCommand cmd = new SqlCommand(deleteRentals, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@CustomerID", customerID);
-                        cmd.ExecuteNonQuery();
-                    }
-
-                    // delete customer
                     string deleteCustomer = "DELETE FROM Customer WHERE CustomerID = @CustomerID;";
                     using (SqlCommand cmd = new SqlCommand(deleteCustomer, conn))
                     {
@@ -295,12 +258,10 @@ namespace MovieRentalApp
             }
         }
 
-        // Search by name, email, phone
         private void btnSearch_Click(object sender, EventArgs e)
         {
             string keyword = txtSearch.Text.Trim();
 
-            // empty search → blank grid
             if (string.IsNullOrEmpty(keyword))
             {
                 gridCustomers.DataSource = null;
@@ -352,7 +313,6 @@ namespace MovieRentalApp
             }
         }
 
-        // when clicking a row load fields
         private void gridCustomers_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0) return;
@@ -395,7 +355,6 @@ namespace MovieRentalApp
             }
         }
 
-        // clear fields
         private void ClearFields()
         {
             txtFirstName.Text = "";
@@ -408,11 +367,10 @@ namespace MovieRentalApp
             txtFirstName.Focus();
         }
 
-        // clear button
         private void btnClear_Click(object sender, EventArgs e)
         {
             ClearFields();
-            gridCustomers.DataSource = null; // keep the list empty
+            gridCustomers.DataSource = null;
         }
 
         private void txtSearch_TextChanged(object sender, EventArgs e) { }

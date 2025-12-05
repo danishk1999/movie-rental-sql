@@ -3,12 +3,13 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Configuration;
 using System.Windows.Forms;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace MovieRentalApp
 {
     internal static class DatabaseHelper
     {
-        // Read the connection string from App.config
         private static string GetConnectionString()
         {
             return ConfigurationManager
@@ -16,13 +17,11 @@ namespace MovieRentalApp
                    .ConnectionString;
         }
 
-        // Basic connection helper used by all forms
         public static SqlConnection GetConnection()
         {
             return new SqlConnection(GetConnectionString());
         }
 
-        // Simple test connection method (used by your Test DB button)
         public static void TestConnection()
         {
             try
@@ -48,7 +47,6 @@ namespace MovieRentalApp
             }
         }
 
-        // Generic SELECT helper (used by CustomersForm, RentalForm, Reports, etc.)
         public static DataTable ExecuteSelect(string query, params SqlParameter[] parameters)
         {
             var dt = new DataTable();
@@ -70,7 +68,6 @@ namespace MovieRentalApp
             return dt;
         }
 
-        // Generic INSERT/UPDATE/DELETE helper
         public static int ExecuteNonQuery(string query, params SqlParameter[] parameters)
         {
             using (SqlConnection conn = GetConnection())
@@ -84,6 +81,14 @@ namespace MovieRentalApp
             }
         }
 
-         
+        public static string HashPassword(string password)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] bytes = Encoding.UTF8.GetBytes(password);
+                byte[] hash = sha256.ComputeHash(bytes);
+                return BitConverter.ToString(hash).Replace("-", "").ToLower();
+            }
+        }
     }
 }
