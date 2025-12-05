@@ -75,6 +75,7 @@
             this.Controls.Add(this.label1);
             this.Name = "Top3Movies";
             this.Text = "Top3Movies";
+            this.Load += new System.EventHandler(this.Top3Movies_Load);
             ((System.ComponentModel.ISupportInitialize)(this.gridTopQueueMovies)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
