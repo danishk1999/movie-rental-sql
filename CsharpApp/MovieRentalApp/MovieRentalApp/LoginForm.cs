@@ -62,7 +62,9 @@ namespace MovieRentalApp
                             string firstName = reader["FirstName"].ToString();
                             string lastName = reader["LastName"].ToString();
 
-                            if (!string.Equals(dbPassword, password))
+                            string hashedInput = DatabaseHelper.HashPassword(password);
+
+                            if (!string.Equals(dbPassword, hashedInput))
                             {
                                 MessageBox.Show(
                                     "Invalid password. Please try again.",
@@ -108,7 +110,5 @@ namespace MovieRentalApp
         {
             txtPassword.PasswordChar = chkShowPassword.Checked ? '\0' : '*';
         }
-
-
     }
 }
