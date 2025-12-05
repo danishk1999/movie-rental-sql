@@ -2,6 +2,7 @@
 using System.Data;
 using System.Data.SqlClient;
 using System.Windows.Forms;
+using System.Collections.Generic;
 
 namespace MovieRentalApp
 {
@@ -33,6 +34,7 @@ namespace MovieRentalApp
             gridCustomerResults.DataSource = null;
             gridMovieResults.DataSource = null;
             gridRentalHistory.DataSource = null;
+            gridCustomerQueue.DataSource = null;
 
             selectedCustomerId = -1;
             selectedMovieId = -1;
@@ -68,6 +70,7 @@ namespace MovieRentalApp
                 gridCustomerResults.DataSource = null;
                 selectedCustomerId = -1;
                 gridRentalHistory.DataSource = null;
+                gridCustomerQueue.DataSource = null;
                 return;
             }
 
@@ -101,6 +104,7 @@ namespace MovieRentalApp
 
             selectedCustomerId = -1;
             gridRentalHistory.DataSource = null;
+            gridCustomerQueue.DataSource = null;
 
             // clear actor rating area
             try
@@ -129,7 +133,9 @@ namespace MovieRentalApp
             DataGridViewRow row = gridCustomerResults.Rows[e.RowIndex];
 
             selectedCustomerId = Convert.ToInt32(row.Cells["CustomerID"].Value);
+
             LoadRentalHistory(selectedCustomerId);
+            LoadCustomerQueue(selectedCustomerId);
 
             numRating.Enabled = false;
             btnSaveRating.Enabled = false;
@@ -218,6 +224,152 @@ namespace MovieRentalApp
         }
 
         // ==========================
+        // CUSTOMER QUEUE – LOAD + SELECT
+        // ==========================
+        private void LoadCustomerQueue(int customerId)
+        {
+            string sql = @"
+SELECT 
+    cq.MovieID,
+    m.MovieName,
+    cq.SortNum,
+    m.NumOfCopy
+FROM CustomerQueue cq
+JOIN Movie m ON cq.MovieID = m.MovieID
+WHERE cq.CustomerID = @cid
+ORDER BY cq.SortNum;";
+
+            DataTable dt = DatabaseHelper.ExecuteSelect(
+                sql,
+                new SqlParameter("@cid", customerId));
+
+            gridCustomerQueue.DataSource = dt;
+
+            if (gridCustomerQueue.Columns.Contains("MovieID"))
+                gridCustomerQueue.Columns["MovieID"].Visible = false;
+
+            if (gridCustomerQueue.Columns.Contains("MovieName"))
+                gridCustomerQueue.Columns["MovieName"].HeaderText = "Queued Movie";
+
+            if (gridCustomerQueue.Columns.Contains("SortNum"))
+                gridCustomerQueue.Columns["SortNum"].HeaderText = "Position";
+
+            if (gridCustomerQueue.Columns.Contains("NumOfCopy"))
+                gridCustomerQueue.Columns["NumOfCopy"].HeaderText = "Copies Available";
+        }
+
+        private void gridCustomerQueue_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0 || gridCustomerQueue.DataSource == null)
+                return;
+
+            DataGridViewRow row = gridCustomerQueue.Rows[e.RowIndex];
+
+            if (row.Cells["MovieID"] != null && row.Cells["MovieID"].Value != DBNull.Value)
+            {
+                selectedMovieId = Convert.ToInt32(row.Cells["MovieID"].Value);
+            }
+        }
+
+        // ==========================
+        // ADD TO QUEUE BUTTON
+        // ==========================
+        private void btnAddToQueue_Click(object sender, EventArgs e)
+        {
+            if (selectedCustomerId == -1)
+            {
+                MessageBox.Show("Please select a customer first.");
+                return;
+            }
+
+            if (selectedMovieId == -1)
+            {
+                MessageBox.Show("Please select a movie to add to the queue (from the movie search list).");
+                return;
+            }
+
+            try
+            {
+                string sql = @"
+IF NOT EXISTS (
+    SELECT 1 
+    FROM CustomerQueue 
+    WHERE CustomerID = @cid AND MovieID = @mid
+)
+BEGIN
+    INSERT INTO CustomerQueue (CustomerID, MovieID, SortNum)
+    SELECT @cid, @mid,
+           ISNULL(MAX(SortNum), 0) + 1
+    FROM CustomerQueue
+    WHERE CustomerID = @cid;
+END";
+
+                DatabaseHelper.ExecuteNonQuery(
+                    sql,
+                    new SqlParameter("@cid", selectedCustomerId),
+                    new SqlParameter("@mid", selectedMovieId));
+
+                MessageBox.Show("Movie added to customer's queue.");
+
+                // refresh queue display
+                LoadCustomerQueue(selectedCustomerId);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error adding movie to queue: " + ex.Message);
+            }
+        }
+
+        // ==========================
+        // REMOVE FROM QUEUE BUTTON
+        // ==========================
+        private void btnRemoveFromQueue_Click(object sender, EventArgs e)
+        {
+            if (selectedCustomerId == -1)
+            {
+                MessageBox.Show("Please select a customer first.");
+                return;
+            }
+
+            if (selectedMovieId == -1)
+            {
+                MessageBox.Show(
+                    "Please select a movie to remove from the queue.\n" +
+                    "Tip: click the movie in the Queue grid.");
+                return;
+            }
+
+            try
+            {
+                string sql = @"
+DELETE FROM CustomerQueue
+WHERE CustomerID = @cid
+  AND MovieID    = @mid;";
+
+                int rows = DatabaseHelper.ExecuteNonQuery(
+                    sql,
+                    new SqlParameter("@cid", selectedCustomerId),
+                    new SqlParameter("@mid", selectedMovieId));
+
+                if (rows > 0)
+                {
+                    MessageBox.Show("Movie removed from customer's queue.");
+                }
+                else
+                {
+                    MessageBox.Show("This movie is not currently in the customer's queue.");
+                }
+
+                // refresh queue display
+                LoadCustomerQueue(selectedCustomerId);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error removing movie from queue: " + ex.Message);
+            }
+        }
+
+        // ==========================
         // RENTAL HISTORY
         // ==========================
         private void LoadRentalHistory(int customerId)
@@ -293,7 +445,7 @@ namespace MovieRentalApp
         }
 
         // ==========================
-        // RENT BUTTON
+        // RENT BUTTON – process QUEUE ONLY
         // ==========================
         private void btnRent_Click(object sender, EventArgs e)
         {
@@ -303,58 +455,96 @@ namespace MovieRentalApp
                 return;
             }
 
-            if (selectedMovieId == -1)
-            {
-                MessageBox.Show("Please select a movie first.");
-                return;
-            }
-
             try
             {
-                string checkStockSql = "SELECT NumOfCopy FROM Movie WHERE MovieID = @mid";
-                DataTable stockDt = DatabaseHelper.ExecuteSelect(
-                    checkStockSql,
-                    new SqlParameter("@mid", selectedMovieId));
+                string queueSql = @"
+SELECT 
+    cq.MovieID,
+    cq.SortNum,
+    m.MovieName,
+    m.NumOfCopy
+FROM CustomerQueue cq
+JOIN Movie m ON cq.MovieID = m.MovieID
+WHERE cq.CustomerID = @cid
+ORDER BY cq.SortNum;";
 
-                if (stockDt.Rows.Count == 0)
+                DataTable queueDt = DatabaseHelper.ExecuteSelect(
+                    queueSql,
+                    new SqlParameter("@cid", selectedCustomerId));
+
+                if (queueDt.Rows.Count == 0)
                 {
-                    MessageBox.Show("Movie not found in database.");
+                    MessageBox.Show("This customer has no movies in their queue.\nAdd movies to the queue first.");
                     return;
                 }
 
-                int stock = Convert.ToInt32(stockDt.Rows[0]["NumOfCopy"]);
-                if (stock <= 0)
+                List<string> rentedMovies = new List<string>();
+                List<string> stillQueued = new List<string>();
+
+                foreach (DataRow row in queueDt.Rows)
                 {
-                    MessageBox.Show("Movie is out of stock!");
-                    return;
+                    int movieId = Convert.ToInt32(row["MovieID"]);
+                    string movieName = row["MovieName"].ToString();
+                    int numOfCopy = Convert.ToInt32(row["NumOfCopy"]);
+
+                    if (numOfCopy > 0)
+                    {
+                        // Insert into RentalRecord
+                        string rentSql = @"
+INSERT INTO RentalRecord (EmployeeID, CustomerID, MovieID, CheckoutTime, ReturnTime, MovieRate)
+VALUES (@EmpID, @CustID, @MovieID, GETDATE(), NULL, NULL);";
+
+                        DatabaseHelper.ExecuteNonQuery(
+                            rentSql,
+                            new SqlParameter("@EmpID", employeeId),
+                            new SqlParameter("@CustID", selectedCustomerId),
+                            new SqlParameter("@MovieID", movieId));
+
+                        // Decrease stock
+                        string updateStockSql = "UPDATE Movie SET NumOfCopy = NumOfCopy - 1 WHERE MovieID = @mid";
+                        DatabaseHelper.ExecuteNonQuery(
+                            updateStockSql,
+                            new SqlParameter("@mid", movieId));
+
+                        // Remove from queue
+                        string deleteQueueSql = @"
+DELETE FROM CustomerQueue
+WHERE CustomerID = @cid AND MovieID = @mid;";
+                        DatabaseHelper.ExecuteNonQuery(
+                            deleteQueueSql,
+                            new SqlParameter("@cid", selectedCustomerId),
+                            new SqlParameter("@mid", movieId));
+
+                        rentedMovies.Add(movieName);
+                    }
+                    else
+                    {
+                        // No copy available; leave in queue
+                        stillQueued.Add(movieName);
+                    }
                 }
 
-                string rentSql = @"
-                    INSERT INTO RentalRecord (EmployeeID, CustomerID, MovieID, CheckoutTime, ReturnTime, MovieRate)
-                    VALUES (@EmpID, @CustID, @MovieID, GETDATE(), NULL, NULL);";
+                // Refresh UI
+                LoadRentalHistory(selectedCustomerId);
+                LoadCustomerQueue(selectedCustomerId);
+                SearchMovies();
 
-                int rows = DatabaseHelper.ExecuteNonQuery(
-                    rentSql,
-                    new SqlParameter("@EmpID", employeeId),
-                    new SqlParameter("@CustID", selectedCustomerId),
-                    new SqlParameter("@MovieID", selectedMovieId));
-
-                if (rows > 0)
+                string message = "";
+                if (rentedMovies.Count > 0)
                 {
-                    string updateStockSql = "UPDATE Movie SET NumOfCopy = NumOfCopy - 1 WHERE MovieID = @mid";
-                    DatabaseHelper.ExecuteNonQuery(
-                        updateStockSql,
-                        new SqlParameter("@mid", selectedMovieId));
-
-                    MessageBox.Show("Movie rented successfully!");
-
-                    LoadRentalHistory(selectedCustomerId);
-                    SearchMovies();
+                    message += "Rented: " + string.Join(", ", rentedMovies) + ".";
                 }
-                else
+                if (stillQueued.Count > 0)
                 {
-                    MessageBox.Show("Rental failed.");
+                    if (message.Length > 0) message += Environment.NewLine;
+                    message += "Still queued (no copies available): " + string.Join(", ", stillQueued) + ".";
                 }
+                if (message.Length == 0)
+                {
+                    message = "No movies were rented (no copies available for any queued movies).";
+                }
+
+                MessageBox.Show(message);
             }
             catch (Exception ex)
             {
@@ -574,7 +764,6 @@ namespace MovieRentalApp
             btnSaveActorRatings.Enabled = true;
         }
 
-
         private void btnSaveActorRatings_Click(object sender, EventArgs e)
         {
             if (selectedRentalRecordId == -1)
@@ -636,7 +825,7 @@ END";
                 {
                     MessageBox.Show("No actor ratings were selected to save.");
                 }
-                // reload actors so your ratings & averages are reflected in the grid
+
                 if (selectedMovieId != -1 && selectedRentalRecordId != -1)
                 {
                     LoadActorsForMovie(selectedMovieId, selectedRentalRecordId);
