@@ -202,61 +202,52 @@ namespace MovieRentalApp
             }
         }
 
-        private void btnDelete_Click(object sender, EventArgs e)
+        private void btnDeleteCustomer_Click(object sender, EventArgs e)
         {
             if (gridCustomers.SelectedRows.Count == 0)
             {
-                MessageBox.Show("Please select a customer to delete.");
+                MessageBox.Show("Please select a customer first.");
                 return;
             }
 
-            int customerID = Convert.ToInt32(gridCustomers.SelectedRows[0].Cells["CustomerID"].Value);
-
-            DialogResult confirm = MessageBox.Show(
-                "Are you sure you want to delete this customer?",
-                "Confirm Delete",
-                MessageBoxButtons.YesNo);
-
-            if (confirm == DialogResult.No)
-                return;
+            int customerID = Convert.ToInt32(
+                gridCustomers.SelectedRows[0].Cells["CustomerID"].Value
+            );
 
             try
             {
-                using (SqlConnection conn = DatabaseHelper.GetConnection())
+                // DELETE phone numbers
+                DatabaseHelper.ExecuteNonQuery(
+                    "DELETE FROM CustomerPhone WHERE CustomerID = @cid",
+                    new SqlParameter("@cid", customerID));
+
+                // DELETE queue
+                DatabaseHelper.ExecuteNonQuery(
+                    "DELETE FROM CustomerQueue WHERE CustomerID = @cid",
+                    new SqlParameter("@cid", customerID));
+
+                // DELETE customer (RentalRecord stays because no FK)
+                int rows = DatabaseHelper.ExecuteNonQuery(
+                    "DELETE FROM Customer WHERE CustomerID = @cid",
+                    new SqlParameter("@cid", customerID));
+
+                if (rows > 0)
                 {
-                    conn.Open();
-
-                    string deletePhones = "DELETE FROM CustomerPhone WHERE CustomerID = @CustomerID;";
-                    using (SqlCommand cmd = new SqlCommand(deletePhones, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@CustomerID", customerID);
-                        cmd.ExecuteNonQuery();
-                    }
-
-                    string deleteQueue = "DELETE FROM CustomerQueue WHERE CustomerID = @CustomerID;";
-                    using (SqlCommand cmd = new SqlCommand(deleteQueue, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@CustomerID", customerID);
-                        cmd.ExecuteNonQuery();
-                    }
-
-                    string deleteCustomer = "DELETE FROM Customer WHERE CustomerID = @CustomerID;";
-                    using (SqlCommand cmd = new SqlCommand(deleteCustomer, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@CustomerID", customerID);
-                        cmd.ExecuteNonQuery();
-                    }
+                    MessageBox.Show("Customer deleted successfully.");
+                    LoadCustomerData();
                 }
-
-                MessageBox.Show("Customer deleted successfully!");
-                LoadCustomerData();
-                ClearFields();
+                else
+                {
+                    MessageBox.Show("Customer could not be deleted.");
+                }
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error deleting customer: " + ex.Message);
             }
         }
+
+
 
         private void btnSearch_Click(object sender, EventArgs e)
         {

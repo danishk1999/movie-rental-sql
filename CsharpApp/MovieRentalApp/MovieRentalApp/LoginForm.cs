@@ -38,7 +38,11 @@ namespace MovieRentalApp
                     conn.Open();
 
                     string query = @"
-                        SELECT EmployeePassword, FirstName, LastName
+                        SELECT 
+                            EmployeeID,
+                            EmployeePassword, 
+                            FirstName, 
+                            LastName
                         FROM Employee
                         WHERE EmployeeUsername = @Username";
 
@@ -58,6 +62,7 @@ namespace MovieRentalApp
                                 return;
                             }
 
+                            int empID = Convert.ToInt32(reader["EmployeeID"]);
                             string dbPassword = reader["EmployeePassword"].ToString();
                             string firstName = reader["FirstName"].ToString();
                             string lastName = reader["LastName"].ToString();
@@ -74,9 +79,12 @@ namespace MovieRentalApp
                                 return;
                             }
 
-                            string fullName = firstName + " " + lastName;
+                            // 🔥 NEW: Save login session info
+                            Session.LoggedInEmployeeID = empID;
+                            Session.LoggedInEmployeeName = firstName + " " + lastName;
+
                             MessageBox.Show(
-                                $"Login successful. Welcome, {fullName}!",
+                                $"Login successful. Welcome, {firstName}!",
                                 "Login Successful",
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Information);
@@ -84,6 +92,7 @@ namespace MovieRentalApp
                     }
                 }
 
+                // Go to main form
                 this.Hide();
                 using (MainForm mainForm = new MainForm())
                 {

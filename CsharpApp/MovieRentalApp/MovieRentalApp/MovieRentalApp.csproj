@@ -134,6 +134,7 @@
     <Compile Include="SearchMovieForm.Designer.cs">
       <DependentUpon>SearchMovieForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Session.cs" />
     <Compile Include="Top3Employees.cs">
       <SubType>Form</SubType>
     </Compile>

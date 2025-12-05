@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Windows.Forms;
-using System.Collections.Generic;
+using static System.Collections.Specialized.BitVector32;
 
 namespace MovieRentalApp
 {
@@ -12,7 +13,8 @@ namespace MovieRentalApp
         private int selectedMovieId = -1;
         private int selectedRentalRecordId = -1;
 
-        private int employeeId = 2004; // temp hard-coded employee
+        private int employeeId => Session.LoggedInEmployeeID;
+
 
         public rentalform()
         {
@@ -573,40 +575,42 @@ WHERE CustomerID = @cid
 
             try
             {
+                // Check movie stock
                 string checkStockSql = "SELECT NumOfCopy FROM Movie WHERE MovieID = @mid";
                 DataTable stockDt = DatabaseHelper.ExecuteSelect(
                     checkStockSql,
                     new SqlParameter("@mid", selectedMovieId));
 
-                DataTable queueDt = DatabaseHelper.ExecuteSelect(
-                    queueSql,
-                    new SqlParameter("@cid", selectedCustomerId));
-
-                if (queueDt.Rows.Count == 0)
+                if (stockDt.Rows.Count == 0)
                 {
                     MessageBox.Show("Movie not found in database.");
                     return;
                 }
 
                 int stock = Convert.ToInt32(stockDt.Rows[0]["NumOfCopy"]);
+
+                // Out of stock
                 if (stock <= 0)
                 {
                     MessageBox.Show("Movie is out of stock!");
                     return;
                 }
 
+                // Rent the movie
                 string rentSql = @"
-                    INSERT INTO RentalRecord (EmployeeID, CustomerID, MovieID, CheckoutTime, ReturnTime, MovieRate)
-                    VALUES (@EmpID, @CustID, @MovieID, GETDATE(), NULL, NULL);";
+            INSERT INTO RentalRecord (EmployeeID, CustomerID, MovieID, CheckoutTime, ReturnTime, MovieRate)
+            VALUES (@EmpID, @CustID, @MovieID, GETDATE(), NULL, NULL);";
 
                 int rows = DatabaseHelper.ExecuteNonQuery(
                     rentSql,
-                    new SqlParameter("@EmpID", employeeId),
+                    new SqlParameter("@EmpID", Session.LoggedInEmployeeID),
+
                     new SqlParameter("@CustID", selectedCustomerId),
                     new SqlParameter("@MovieID", selectedMovieId));
 
                 if (rows > 0)
                 {
+                    // Reduce stock
                     string updateStockSql = "UPDATE Movie SET NumOfCopy = NumOfCopy - 1 WHERE MovieID = @mid";
                     DatabaseHelper.ExecuteNonQuery(
                         updateStockSql,
@@ -617,17 +621,19 @@ WHERE CustomerID = @cid
                     LoadRentalHistory(selectedCustomerId);
                     SearchMovies();
                 }
-                if (message.Length == 0)
+                else
                 {
-                    MessageBox.Show("Rental failed.");
+                    MessageBox.Show("Rental failed: no rows inserted.");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Unexpected error during rental:\n{ex.Message}\n\nStack Trace:\n{ex.StackTrace}",
+                MessageBox.Show(
+                    $"Unexpected error during rental:\n{ex.Message}\n\nStack Trace:\n{ex.StackTrace}",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
 
         // ==========================
         // RETURN BUTTON
