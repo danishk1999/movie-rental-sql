@@ -31,6 +31,7 @@ namespace MovieRentalApp
             COUNT(*) AS QueueCount
         FROM dbo.CustomerQueue cq
         JOIN dbo.Movie m ON cq.MovieID = m.MovieID
+        WHERE m.NumOfCopy = 0   -- out of stock
         GROUP BY m.MovieID, m.MovieName
         ORDER BY QueueCount DESC, m.MovieName;";
 
@@ -45,7 +46,13 @@ namespace MovieRentalApp
                 gridTopQueueMovies.Columns["QueueCount"].HeaderText = "Times in Queue";
         }
 
+
         private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Top3Movies_Load(object sender, EventArgs e)
         {
 
         }
